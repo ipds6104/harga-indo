@@ -5,11 +5,11 @@
     <!-- Role Switcher Panel -->
     <f7-block class="glass-card compact-margin">
       <div class="row align-items-center">
-        <div class="col-60 medium-50">
+        <div class="col-100 medium-60">
           <h3 class="title-outfit no-margin-bottom">Simulasi Peran Pejabat TPID</h3>
           <p class="text-muted small no-margin-top">Pilih peran untuk menguji alur persetujuan bertingkat (Human-in-the-Loop).</p>
         </div>
-        <div class="col-40 medium-50 text-right">
+        <div class="col-100 medium-40 role-switcher-col">
           <f7-segmented raised>
             <f7-button :active="selectedRole === 'kadisdag'" @click="setRole('kadisdag')">Kadisdag</f7-button>
             <f7-button :active="selectedRole === 'sekda'" @click="setRole('sekda')">Sekda (Ketua TAPD)</f7-button>
@@ -393,33 +393,33 @@ export default {
 }
 
 .status-cooldown {
-  background: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: hsla(var(--accent-primary), 0.15);
+  color: hsl(var(--accent-primary));
+  border: 1px solid hsla(var(--accent-primary), 0.3);
 }
 
 .status-active_level_1 {
-  background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: hsla(var(--status-warning), 0.15);
+  color: hsl(var(--status-warning));
+  border: 1px solid hsla(var(--status-warning), 0.3);
 }
 
 .status-active_level_2 {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: hsla(var(--status-danger), 0.15);
+  color: hsl(var(--status-danger));
+  border: 1px solid hsla(var(--status-danger), 0.3);
 }
 
 .status-resolved {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: hsla(var(--status-success), 0.15);
+  color: hsl(var(--status-success));
+  border: 1px solid hsla(var(--status-success), 0.3);
 }
 
 .status-escalated {
-  background: rgba(220, 38, 38, 0.3);
-  color: #f87171;
-  border: 1px solid rgba(220, 38, 38, 0.6);
+  background: hsla(var(--status-danger), 0.25);
+  color: hsl(var(--status-danger));
+  border: 1px solid hsla(var(--status-danger), 0.5);
   animation: pulse-border 2s infinite;
 }
 
@@ -449,38 +449,79 @@ export default {
 }
 
 .val-danger {
-  color: #f87171;
+  color: hsl(var(--status-danger));
 }
 
 .val-warning {
-  color: #fbbf24;
+  color: hsl(var(--status-warning));
 }
 
 .cooldown-info {
-  background: rgba(59, 130, 246, 0.1);
-  border-left: 4px solid #3b82f6;
+  background: hsla(var(--accent-primary), 0.08);
+  border-left: 4px solid hsl(var(--accent-primary));
   padding: 10px 15px;
   margin: 15px 0 0 0;
   border-radius: 4px;
   font-size: 0.8rem;
   line-height: 1.4;
-  color: #93c5fd;
+  color: hsl(var(--text-secondary));
 }
 
 .dss-recommendation {
-  background: rgba(139, 92, 246, 0.1);
-  border-left: 4px solid #8b5cf6;
+  background: hsla(var(--accent-purple), 0.08);
+  border-left: 4px solid hsl(var(--accent-purple));
   padding: 10px 15px;
   margin: 15px 0 0 0;
   border-radius: 4px;
   font-size: 0.85rem;
   line-height: 1.4;
+  color: hsl(var(--text-secondary));
 }
 
 .approval-action-area {
   margin-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 15px;
+}
+
+/* Premium styled form inputs inside approval area */
+.approval-action-area :deep(.list) {
+  --f7-list-bg-color: transparent;
+  --f7-list-item-padding-horizontal: 0px;
+}
+
+.approval-action-area :deep(.item-content) {
+  padding-left: 0 !important;
+}
+
+.approval-action-area :deep(.item-inner) {
+  padding-right: 0 !important;
+}
+
+.approval-action-area :deep(.item-title.item-label) {
+  color: hsl(var(--text-secondary)) !important;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.approval-action-area :deep(.item-input-wrap input) {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+  height: auto !important;
+  font-family: "Inter", sans-serif !important;
+  transition: all 0.3s;
+}
+
+.approval-action-area :deep(.item-input-wrap input:focus) {
+  border-color: hsl(var(--accent-primary)) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
 }
 
 .label-input {
@@ -501,9 +542,9 @@ export default {
 }
 
 .surplus-badge {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: hsla(var(--status-success), 0.15);
+  color: hsl(var(--status-success));
+  border: 1px solid hsla(var(--status-success), 0.3);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 3px 8px;
@@ -515,5 +556,16 @@ export default {
   padding: 8px 12px;
   border-radius: 4px;
   margin-top: 8px;
+}
+
+/* Role switcher responsive helpers */
+.role-switcher-col {
+  margin-top: 12px;
+}
+
+@media (min-width: 768px) {
+  .role-switcher-col {
+    margin-top: 0;
+  }
 }
 </style>
