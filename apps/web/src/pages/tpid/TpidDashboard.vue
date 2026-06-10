@@ -1,39 +1,41 @@
 <template>
-  <f7-page class="gradient-bg">
-    <f7-navbar title="TPID Inflation Control Dashboard" back-link="Back" class="navbar-custom"></f7-navbar>
+  <f7-page class="tpid-page">
+    <f7-navbar title="TPID Inflation Control Dashboard" back-link="Back"></f7-navbar>
 
     <!-- Role Switcher Panel -->
-    <f7-block class="glass-card compact-margin">
-      <div class="row align-items-center">
-        <div class="col-100 medium-60">
-          <h3 class="title-outfit no-margin-bottom">Simulasi Peran Pejabat TPID</h3>
-          <p class="text-muted small no-margin-top">Pilih peran untuk menguji alur persetujuan bertingkat (Human-in-the-Loop).</p>
-        </div>
-        <div class="col-100 medium-40 role-switcher-col">
-          <f7-segmented raised>
-            <f7-button :active="selectedRole === 'kadisdag'" @click="setRole('kadisdag')">Kadisdag</f7-button>
-            <f7-button :active="selectedRole === 'sekda'" @click="setRole('sekda')">Sekda (Ketua TAPD)</f7-button>
-          </f7-segmented>
-        </div>
+    <div class="tpid-section">
+      <div class="glass-card">
+        <h3 class="title-outfit card-title">Simulasi Peran Pejabat TPID</h3>
+        <p class="card-subtitle">Pilih peran untuk menguji alur persetujuan bertingkat (Human-in-the-Loop).</p>
+        <f7-segmented raised class="role-segmented">
+          <f7-button :active="selectedRole === 'kadisdag'" @click="setRole('kadisdag')">Kadisdag</f7-button>
+          <f7-button :active="selectedRole === 'sekda'" @click="setRole('sekda')">Sekda (Ketua TAPD)</f7-button>
+        </f7-segmented>
       </div>
-    </f7-block>
+    </div>
 
     <!-- Active Alerts Header -->
-    <f7-block-title class="title-outfit header-title">Daftar Alert Inflasi Daerah</f7-block-title>
+    <div class="tpid-section-title">Daftar Alert Inflasi Daerah</div>
 
-    <f7-block v-if="loading" class="text-center">
-      <f7-preloader color="purple"></f7-preloader>
-      <p class="text-muted">Memuat data gejolak harga...</p>
-    </f7-block>
+    <!-- Loading state -->
+    <div v-if="loading" class="tpid-section text-center">
+      <f7-preloader color="blue"></f7-preloader>
+      <p class="card-subtitle" style="margin-top: 12px;">Memuat data gejolak harga...</p>
+    </div>
 
-    <f7-block v-else-if="alerts.length === 0" class="glass-card text-center text-muted" style="padding: 40px 20px;">
-      <span style="font-size: 3rem;">✅</span>
-      <h4 class="title-outfit no-margin-bottom">Semua Harga Komoditas Stabil</h4>
-      <p class="small">Tidak ada anomali harga di atas ambang batas (Z-Score & HAP) hari ini.</p>
-    </f7-block>
+    <!-- Empty state -->
+    <div v-else-if="alerts.length === 0" class="tpid-section">
+      <div class="glass-card text-center" style="padding: 40px 20px;">
+        <span style="font-size: 3rem;">✅</span>
+        <h4 class="title-outfit" style="margin: 12px 0 8px;">Semua Harga Komoditas Stabil</h4>
+        <p class="card-subtitle">Tidak ada anomali harga di atas ambang batas (Z-Score &amp; HAP) hari ini.</p>
+      </div>
+    </div>
 
-    <f7-block v-else class="no-padding">
+    <!-- Alert Cards -->
+    <div v-else class="tpid-section">
       <div v-for="item in alerts" :key="item.alert.id" class="glass-card alert-card">
+        <!-- Card Header -->
         <div class="alert-header">
           <div>
             <span class="region-badge">{{ item.provinsi?.nama }} - {{ item.kota?.nama || 'Seluruh Daerah' }}</span>
@@ -44,81 +46,80 @@
           </span>
         </div>
 
+        <!-- Alert Details -->
         <div class="alert-details">
           <div class="detail-row">
-            <span class="label">Harga Rata-rata:</span>
-            <span class="value val-danger">Rp {{ item.alert.hargaRataRata.toLocaleString('id-ID') }}</span>
+            <span class="detail-label">Harga Rata-rata:</span>
+            <span class="detail-value val-danger">Rp {{ item.alert.hargaRataRata.toLocaleString('id-ID') }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">HAP / HET Nasional:</span>
-            <span class="value">Rp {{ item.alert.thresholdHap.toLocaleString('id-ID') }}</span>
+            <span class="detail-label">HAP / HET Nasional:</span>
+            <span class="detail-value">Rp {{ item.alert.thresholdHap.toLocaleString('id-ID') }}</span>
           </div>
           <div class="detail-row">
-            <span class="label">Volatilitas (Z-Score):</span>
-            <span class="value z-score">{{ item.alert.zScore.toFixed(2) }} (Ambang Batas: >{{ item.alert.komoditasId === 2 ? '2.50' : '1.50' }})</span>
+            <span class="detail-label">Volatilitas (Z-Score):</span>
+            <span class="detail-value">{{ item.alert.zScore.toFixed(2) }} (Ambang Batas: >{{ item.alert.komoditasId === 2 ? '2.50' : '1.50' }})</span>
           </div>
           <div class="detail-row">
-            <span class="label">Tanggal Deteksi:</span>
-            <span class="value">{{ item.alert.tanggal }}</span>
+            <span class="detail-label">Tanggal Deteksi:</span>
+            <span class="detail-value">{{ item.alert.tanggal }}</span>
           </div>
           <div class="detail-row" v-if="item.alert.status === 'cooldown'">
-            <span class="label">Masa Cooldown (Tunggu):</span>
-            <span class="value val-warning">Hingga {{ item.alert.cooldownEndTanggal }}</span>
+            <span class="detail-label">Masa Cooldown (Tunggu):</span>
+            <span class="detail-value val-warning">Hingga {{ item.alert.cooldownEndTanggal }}</span>
           </div>
         </div>
 
-        <!-- Cooldown Information Notification -->
-        <f7-block class="cooldown-info" v-if="item.alert.status === 'cooldown'">
-          🛡️ <strong>Masa Tunggu 3 Hari Aktif:</strong> Berdasarkan data historis, 67.87% gejolak harga jangka pendek mereda dengan sendirinya. Sistem menunda notifikasi resmi untuk menghindari pemborosan anggaran (*boncos*).
-        </f7-block>
+        <!-- Cooldown Information Banner -->
+        <div class="info-banner info-banner--blue" v-if="item.alert.status === 'cooldown'">
+          🛡️ <strong>Masa Tunggu 3 Hari Aktif:</strong> Berdasarkan data historis, 67.87% gejolak harga jangka pendek mereda dengan sendirinya. Sistem menunda notifikasi resmi untuk menghindari pemborosan anggaran.
+        </div>
 
-        <!-- Decision Support System Recommendation Cards -->
-        <f7-block class="dss-recommendation" v-if="item.alert.status !== 'cooldown' && item.alert.status !== 'resolved'">
-          <h4 class="title-outfit no-margin-bottom">💡 Rekomendasi Aksi Taktis (DSS)</h4>
-          <p class="small no-margin-top" style="color: hsl(var(--text-secondary))">
-            {{ getRecommendationText(item) }}
-          </p>
-
-          <!-- Matchmaking Trigger Button -->
-          <f7-button outline small round color="purple" style="margin-top: 10px; display: inline-block; width: auto;" @click="openMatchmaker(item)">
+        <!-- DSS Recommendation -->
+        <div class="info-banner info-banner--purple" v-if="item.alert.status !== 'cooldown' && item.alert.status !== 'resolved'">
+          <h4 class="title-outfit dss-title">💡 Rekomendasi Aksi Taktis (DSS)</h4>
+          <p class="dss-text">{{ getRecommendationText(item) }}</p>
+          <f7-button outline small round color="purple" class="matchmaker-btn" @click="openMatchmaker(item)">
             🔍 Cari Sentra Surplus (Matchmaker)
           </f7-button>
-        </f7-block>
+        </div>
 
         <!-- Approval Form Area -->
-        <div class="approval-action-area" v-if="canApprove(item.alert.status)">
-          <h4 class="title-outfit label-input">Persetujuan Pejabat Berwenang</h4>
-          <f7-list no-hairlines-md style="margin: 0;">
-            <f7-list-input
-              label="Catatan Kebijakan / Penjelasan Tindakan"
-              type="text"
-              placeholder="Masukkan instruksi atau catatan audit BPK..."
-              :value="approvals[item.alert.id]?.catatan || ''"
-              @input="approvals[item.alert.id] = { ...approvals[item.alert.id], catatan: $event.target.value }"
-            ></f7-list-input>
-            <f7-list-input
-              label="Tanda Tangan Digital (PIN / Kunci Otentikasi)"
-              type="password"
-              placeholder="Masukkan PIN tanda tangan digital..."
-              :value="approvals[item.alert.id]?.signature || ''"
-              @input="approvals[item.alert.id] = { ...approvals[item.alert.id], signature: $event.target.value }"
-            ></f7-list-input>
-          </f7-list>
-          <div class="row style-buttons" style="margin-top: 15px;">
-            <div class="col-50">
-              <f7-button fill color="green" preloader :loading="submitting === item.alert.id" @click="submitApproval(item.alert, 'approve')">
-                Setujui & Tandatangan
-              </f7-button>
+        <div class="approval-area" v-if="canApprove(item.alert.status)">
+          <h4 class="title-outfit approval-title">Persetujuan Pejabat Berwenang</h4>
+          <div class="approval-fields">
+            <div class="approval-field">
+              <label class="field-label">Catatan Kebijakan / Penjelasan Tindakan</label>
+              <input
+                class="field-input"
+                type="text"
+                placeholder="Masukkan instruksi atau catatan audit BPK..."
+                :value="approvals[item.alert.id]?.catatan || ''"
+                @input="approvals[item.alert.id] = { ...approvals[item.alert.id], catatan: $event.target.value }"
+              />
             </div>
-            <div class="col-50">
-              <f7-button fill color="red" @click="submitApproval(item.alert, 'reject')">
-                Tolak / Abaikan
-              </f7-button>
+            <div class="approval-field">
+              <label class="field-label">Tanda Tangan Digital (PIN / Kunci Otentikasi)</label>
+              <input
+                class="field-input"
+                type="password"
+                placeholder="Masukkan PIN tanda tangan digital..."
+                :value="approvals[item.alert.id]?.signature || ''"
+                @input="approvals[item.alert.id] = { ...approvals[item.alert.id], signature: $event.target.value }"
+              />
             </div>
+          </div>
+          <div class="approval-buttons">
+            <f7-button fill color="green" preloader :loading="submitting === item.alert.id" @click="submitApproval(item.alert, 'approve')">
+              Setujui &amp; Tandatangan
+            </f7-button>
+            <f7-button fill color="red" @click="submitApproval(item.alert, 'reject')">
+              Tolak / Abaikan
+            </f7-button>
           </div>
         </div>
       </div>
-    </f7-block>
+    </div>
 
     <!-- Matchmaker Sheet Modal -->
     <f7-sheet
@@ -128,50 +129,45 @@
       swipe-to-close
       backdrop
     >
-      <f7-page-content class="gradient-bg">
-        <f7-block-title class="title-outfit no-margin-top" style="font-size: 1.3rem;">
-          🗺️ Matchmaking Sentra Produksi Surplus
-        </f7-block-title>
-        <f7-block class="no-margin-top">
-          <p class="small text-muted">Mencari sentra produksi surplus terdekat untuk menyuplai daerah defisit secara efisien.</p>
+      <f7-page-content class="matchmaker-sheet-content">
+        <div class="tpid-section">
+          <h2 class="title-outfit sheet-title">🗺️ Matchmaking Sentra Produksi Surplus</h2>
+          <p class="card-subtitle">Mencari sentra produksi surplus terdekat untuk menyuplai daerah defisit secara efisien.</p>
 
           <div v-if="loadingMatch" class="text-center" style="padding: 20px;">
             <f7-preloader color="purple"></f7-preloader>
-            <p class="small text-muted">Menghitung rute logistik...</p>
+            <p class="card-subtitle" style="margin-top: 12px;">Menghitung rute logistik...</p>
           </div>
 
-          <div v-else-if="matches.length === 0" class="text-center text-muted" style="padding: 20px;">
+          <div v-else-if="matches.length === 0" class="text-center card-subtitle" style="padding: 20px;">
             ⚠️ Tidak ada data sentra produksi surplus yang terdaftar untuk komoditas ini.
           </div>
 
           <div v-else>
             <div v-for="match in matches" :key="match.sentraId" class="glass-card match-route-card">
-              <div class="row no-gutter">
-                <div class="col-60">
-                  <h4 class="title-outfit no-margin">Sentra: {{ match.provinsiNama }}</h4>
-                  <p class="small text-muted no-margin-bottom">Komoditas: {{ match.komoditasNama }}</p>
+              <div class="match-header">
+                <div>
+                  <h4 class="title-outfit" style="margin: 0 0 4px;">Sentra: {{ match.provinsiNama }}</h4>
+                  <p class="card-subtitle" style="margin: 0;">Komoditas: {{ match.komoditasNama }}</p>
                 </div>
-                <div class="col-40 text-right">
-                  <span class="surplus-badge">Surplus: {{ match.surplusTon }} Ton</span>
-                </div>
+                <span class="surplus-badge">Surplus: {{ match.surplusTon }} Ton</span>
               </div>
-
-              <div class="match-details" style="margin-top: 10px; border-top: 1px dashed rgba(255, 255, 255, 0.1); padding-top: 8px;">
+              <div class="match-details">
                 <div class="detail-row">
-                  <span class="label">Jarak Logistik:</span>
-                  <span class="value">{{ match.distanceKm }} km</span>
+                  <span class="detail-label">Jarak Logistik:</span>
+                  <span class="detail-value">{{ match.distanceKm }} km</span>
                 </div>
                 <div class="detail-row">
-                  <span class="label">Estimasi Subsidi Ongkos Angkut:</span>
-                  <span class="value val-danger">Rp {{ match.estimatedLogisticsCost.toLocaleString('id-ID') }}</span>
+                  <span class="detail-label">Estimasi Subsidi Ongkos Angkut:</span>
+                  <span class="detail-value val-danger">Rp {{ match.estimatedLogisticsCost.toLocaleString('id-ID') }}</span>
                 </div>
               </div>
-              <p class="small route-desc">
+              <p class="route-desc">
                 🚀 <em>Rencana aksi:</em> Gunakan anggaran BTT daerah untuk subsidi transportasi pengiriman sebesar Rp {{ match.estimatedLogisticsCost.toLocaleString('id-ID') }} guna memangkas harga eceran.
               </p>
             </div>
           </div>
-        </f7-block>
+        </div>
       </f7-page-content>
     </f7-sheet>
   </f7-page>
@@ -345,107 +341,143 @@ export default {
 </script>
 
 <style scoped>
-.gradient-bg {
-  background: linear-gradient(135deg, hsl(230, 40%, 8%), hsl(280, 50%, 5%)) !important;
+/* ─── Page Layout ────────────────────────────────────────────── */
+.tpid-page {
+  --f7-page-bg-color: hsl(230, 40%, 8%);
   color: #ffffff;
 }
 
-.compact-margin {
-  margin: 15px !important;
+.tpid-section {
+  padding: 0 16px 16px;
 }
 
-.header-title {
-  color: hsl(var(--accent-primary)) !important;
-  font-size: 1.15rem;
+.tpid-section-title {
+  padding: 16px 16px 8px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: hsl(var(--accent-primary));
+  letter-spacing: -0.01em;
 }
 
+/* ─── Cards ──────────────────────────────────────────────────── */
 .alert-card {
-  margin: 15px !important;
-  padding: 20px;
+  margin-bottom: 16px;
 }
 
+.card-title {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.card-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: hsl(var(--text-secondary));
+  line-height: 1.5;
+}
+
+/* ─── Role Switcher ──────────────────────────────────────────── */
+.role-segmented {
+  margin-top: 14px;
+  width: 100%;
+}
+
+/* ─── Alert Header ───────────────────────────────────────────── */
 .alert-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .region-badge {
-  font-size: 0.75rem;
+  display: inline-block;
+  font-size: 0.72rem;
   background: rgba(255, 255, 255, 0.1);
   padding: 3px 8px;
   border-radius: 12px;
-  color: hsl(var(--accent-secondary));
+  color: hsl(var(--text-secondary));
+  margin-bottom: 6px;
 }
 
 .commodity-title {
-  margin: 6px 0 0 0;
-  font-size: 1.35rem;
+  margin: 0;
+  font-size: 1.3rem;
 }
 
+/* ─── Status Badges ──────────────────────────────────────────── */
 .status-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
   padding: 4px 10px;
   border-radius: 20px;
+  white-space: nowrap;
 }
 
 .status-cooldown {
   background: hsla(var(--accent-primary), 0.15);
   color: hsl(var(--accent-primary));
-  border: 1px solid hsla(var(--accent-primary), 0.3);
+  border: 1px solid hsla(var(--accent-primary), 0.35);
 }
 
 .status-active_level_1 {
   background: hsla(var(--status-warning), 0.15);
   color: hsl(var(--status-warning));
-  border: 1px solid hsla(var(--status-warning), 0.3);
+  border: 1px solid hsla(var(--status-warning), 0.35);
 }
 
 .status-active_level_2 {
   background: hsla(var(--status-danger), 0.15);
   color: hsl(var(--status-danger));
-  border: 1px solid hsla(var(--status-danger), 0.3);
+  border: 1px solid hsla(var(--status-danger), 0.35);
 }
 
 .status-resolved {
   background: hsla(var(--status-success), 0.15);
   color: hsl(var(--status-success));
-  border: 1px solid hsla(var(--status-success), 0.3);
+  border: 1px solid hsla(var(--status-success), 0.35);
 }
 
 .status-escalated {
   background: hsla(var(--status-danger), 0.25);
   color: hsl(var(--status-danger));
-  border: 1px solid hsla(var(--status-danger), 0.5);
+  border: 1px solid hsla(var(--status-danger), 0.55);
   animation: pulse-border 2s infinite;
 }
 
 @keyframes pulse-border {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 
+/* ─── Detail Rows ────────────────────────────────────────────── */
 .alert-details {
-  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
+  align-items: baseline;
+  font-size: 0.875rem;
+  gap: 8px;
 }
 
-.detail-row .label {
+.detail-label {
   color: hsl(var(--text-secondary));
+  flex-shrink: 0;
 }
 
-.detail-row .value {
-  font-weight: 500;
+.detail-value {
+  font-weight: 600;
+  text-align: right;
 }
 
 .val-danger {
@@ -456,116 +488,161 @@ export default {
   color: hsl(var(--status-warning));
 }
 
-.cooldown-info {
-  background: hsla(var(--accent-primary), 0.08);
-  border-left: 4px solid hsl(var(--accent-primary));
-  padding: 10px 15px;
-  margin: 15px 0 0 0;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  line-height: 1.4;
+/* ─── Info Banners ───────────────────────────────────────────── */
+.info-banner {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  border-left: 3px solid;
+}
+
+.info-banner--blue {
+  background: hsla(var(--accent-primary), 0.1);
+  border-color: hsl(var(--accent-primary));
   color: hsl(var(--text-secondary));
 }
 
-.dss-recommendation {
-  background: hsla(var(--accent-purple), 0.08);
-  border-left: 4px solid hsl(var(--accent-purple));
-  padding: 10px 15px;
-  margin: 15px 0 0 0;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  line-height: 1.4;
+.info-banner--purple {
+  background: hsla(var(--accent-purple), 0.1);
+  border-color: hsl(var(--accent-purple));
   color: hsl(var(--text-secondary));
 }
 
-.approval-action-area {
-  margin-top: 20px;
+.dss-title {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  color: hsl(var(--text-primary));
+}
+
+.dss-text {
+  margin: 0 0 10px;
+  font-size: 0.83rem;
+}
+
+.matchmaker-btn {
+  display: inline-block;
+  width: auto;
+}
+
+/* ─── Approval Area ──────────────────────────────────────────── */
+.approval-area {
+  margin-top: 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 15px;
+  padding-top: 16px;
 }
 
-/* Premium styled form inputs inside approval area */
-.approval-action-area :deep(.list) {
-  --f7-list-bg-color: transparent;
-  --f7-list-item-padding-horizontal: 0px;
-}
-
-.approval-action-area :deep(.item-content) {
-  padding-left: 0 !important;
-}
-
-.approval-action-area :deep(.item-inner) {
-  padding-right: 0 !important;
-}
-
-.approval-action-area :deep(.item-title.item-label) {
-  color: hsl(var(--text-secondary)) !important;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 6px;
-}
-
-.approval-action-area :deep(.item-input-wrap input) {
-  background: rgba(15, 23, 42, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 12px !important;
-  color: white !important;
-  padding: 12px 16px !important;
-  font-size: 0.9rem !important;
-  height: auto !important;
-  font-family: "Inter", sans-serif !important;
-  transition: all 0.3s;
-}
-
-.approval-action-area :deep(.item-input-wrap input:focus) {
-  border-color: hsl(var(--accent-primary)) !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-}
-
-.label-input {
-  color: hsl(var(--accent-primary));
+.approval-title {
+  margin: 0 0 14px;
   font-size: 0.95rem;
-  margin-bottom: 10px;
+  color: hsl(var(--accent-primary));
 }
 
+.approval-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.approval-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: hsl(var(--text-secondary));
+}
+
+.field-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #ffffff;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.field-input:focus {
+  border-color: hsl(var(--accent-primary));
+  box-shadow: 0 0 0 3px hsla(var(--accent-primary), 0.2);
+}
+
+.field-input::placeholder {
+  color: hsl(var(--text-muted));
+}
+
+.approval-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ─── Matchmaker Sheet ───────────────────────────────────────── */
 .matchmaker-sheet {
-  background: transparent !important;
-  height: 70vh !important;
-  color: #fff;
+  height: 72vh;
+}
+
+.matchmaker-sheet-content {
+  background: linear-gradient(160deg, hsl(230, 40%, 8%), hsl(280, 50%, 5%));
+  color: #ffffff;
+}
+
+.sheet-title {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
 }
 
 .match-route-card {
-  margin: 10px 0 !important;
-  padding: 15px;
+  margin-bottom: 14px;
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.match-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .surplus-badge {
+  flex-shrink: 0;
   background: hsla(var(--status-success), 0.15);
   color: hsl(var(--status-success));
-  border: 1px solid hsla(var(--status-success), 0.3);
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 3px 8px;
+  border: 1px solid hsla(var(--status-success), 0.35);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
   border-radius: 12px;
+  white-space: nowrap;
 }
 
 .route-desc {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 8px 12px;
-  border-radius: 4px;
-  margin-top: 8px;
-}
-
-/* Role switcher responsive helpers */
-.role-switcher-col {
-  margin-top: 12px;
-}
-
-@media (min-width: 768px) {
-  .role-switcher-col {
-    margin-top: 0;
-  }
+  background: rgba(255, 255, 255, 0.06);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: hsl(var(--text-secondary));
 }
 </style>
