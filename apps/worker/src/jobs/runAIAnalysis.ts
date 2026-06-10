@@ -1,6 +1,7 @@
 import { AIClient } from '@harga/ai-client';
 import { aiInsights, db, hargaHarian, komoditas, provinsi, variant } from '@harga/db';
 import { and, desc, eq, sql } from 'drizzle-orm';
+import { evaluatePrice } from '../services/alert-evaluator';
 
 const aiClient = new AIClient();
 
@@ -55,6 +56,17 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
             pct: item.harga.prosentasePerubahan,
           });
         }
+
+        // Evaluate price for TPID Alert & state machine
+        await evaluatePrice({
+          tanggal,
+          kodeProvinsi: prov.kode,
+          kodeKabKota: item.harga.kodeKabKota || '',
+          komoditasId: item.harga.komoditasId,
+          variantId: item.harga.variantId,
+          hargaRataRata: item.harga.harga,
+          jumlahPedagang: item.harga.jumlahPedagang,
+        });
 
         const anomalyResult = await aiClient.detectAnomalies(item.harga, item.v);
         if (anomalyResult.isAnomaly) {

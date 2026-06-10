@@ -7,6 +7,8 @@ import { insightsRoutes } from './routes/insights';
 import { komoditasRoutes } from './routes/komoditas';
 import { masterRoutes } from './routes/master';
 import { pasarRoutes } from './routes/pasar';
+import { tpidRoutes } from './routes/tpid';
+import { webhookRoutes } from './routes/webhook';
 
 export const app = new Elysia()
   .use(cors())
@@ -44,4 +46,6 @@ export const app = new Elysia()
   .use(hargaRoutes)
   .use(insightsRoutes)
   .use(ingestionRoutes)
-  .use(masterRoutes);
+  .use(masterRoutes)
+  .use(tpidRoutes)
+  .use(webhookRoutes);

@@ -293,3 +293,142 @@ export const hargaHarianDetailRelations = relations(hargaHarianDetail, ({ one })
     references: [pedagang.id],
   }),
 }));
+
+// TPID User
+export const tpidUser = pgTable('tpid_user', {
+  id: integer('id').primaryKey(),
+  nama: varchar('nama', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  role: varchar('role', { length: 20 }).notNull(), // 'kadisdag', 'sekda'
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Sentra Produksi
+export const sentraProduksi = pgTable('sentra_produksi', {
+  id: integer('id').primaryKey(),
+  kodeProvinsi: varchar('kode_provinsi', { length: 10 })
+    .notNull()
+    .references(() => provinsi.kode),
+  kodeKabKota: varchar('kode_kab_kota', { length: 10 }).references(() => kota.kode),
+  komoditasId: integer('komoditas_id')
+    .notNull()
+    .references(() => komoditas.id),
+  surplusTep: doublePrecision('surplus_tep').notNull(), // Surplus capacity in Ton Equivalent
+  lat: varchar('lat', { length: 50 }),
+  lon: varchar('lon', { length: 50 }),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// PIHPS BI Historical average caching
+export const pihpsHargaHarian = pgTable(
+  'pihps_harga_harian',
+  {
+    id: integer('id').primaryKey(),
+    kodeProvinsi: varchar('kode_provinsi', { length: 10 })
+      .notNull()
+      .references(() => provinsi.kode),
+    komoditasId: integer('komoditas_id')
+      .notNull()
+      .references(() => komoditas.id),
+    tanggal: varchar('tanggal', { length: 10 }).notNull(), // YYYY-MM-DD
+    harga: doublePrecision('harga').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      provinsiKomoditasTanggalIdx: index('pihps_prov_kom_tgl_idx').on(
+        table.kodeProvinsi,
+        table.komoditasId,
+        table.tanggal,
+      ),
+    };
+  },
+);
+
+// TPID Alert State Machine
+export const tpidAlert = pgTable(
+  'tpid_alert',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(), // UUID
+    tanggal: varchar('tanggal', { length: 10 }).notNull(), // YYYY-MM-DD
+    kodeProvinsi: varchar('kode_provinsi', { length: 10 }).references(() => provinsi.kode),
+    kodeKabKota: varchar('kode_kab_kota', { length: 10 }).references(() => kota.kode),
+    komoditasId: integer('komoditas_id')
+      .notNull()
+      .references(() => komoditas.id),
+    variantId: integer('variant_id')
+      .notNull()
+      .references(() => variant.id),
+    status: varchar('status', { length: 20 }).notNull(), // 'cooldown', 'active_level_1', 'active_level_2', 'resolved', 'escalated'
+    hargaRataRata: doublePrecision('harga_rata_rata').notNull(),
+    thresholdHap: doublePrecision('threshold_hap').notNull(),
+    zScore: doublePrecision('z_score').notNull(),
+    jumlahPedagang: integer('jumlah_pedagang').notNull(),
+    cooldownEndTanggal: varchar('cooldown_end_tanggal', { length: 10 }), // YYYY-MM-DD
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      alertStatusIdx: index('tpid_alert_status_idx').on(table.status),
+      alertTanggalIdx: index('tpid_alert_tanggal_idx').on(table.tanggal),
+    };
+  },
+);
+
+// TPID Immutable Action Log (Audit Trail)
+export const tpidActionLog = pgTable(
+  'tpid_action_log',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(), // UUID
+    alertId: varchar('alert_id', { length: 36 })
+      .notNull()
+      .references(() => tpidAlert.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => tpidUser.id),
+    action: varchar('action', { length: 30 }).notNull(), // 'approve_level_1', 'approve_level_2', 'reject', 'resolve'
+    catatan: text('catatan'),
+    rekomendasiAksi: text('rekomendasi_aksi'),
+    digitalSignature: text('digital_signature'),
+    hashRecord: varchar('hash_record', { length: 64 }).notNull(), // Cryptographic SHA-256 for audit integrity
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      actionLogAlertIdx: index('tpid_action_log_alert_idx').on(table.alertId),
+    };
+  },
+);
+
+// Relationships
+export const tpidUserRelations = relations(tpidUser, ({ many }) => ({
+  actionLogs: many(tpidActionLog),
+}));
+
+export const sentraProduksiRelations = relations(sentraProduksi, ({ one }) => ({
+  provinsi: one(provinsi, { fields: [sentraProduksi.kodeProvinsi], references: [provinsi.kode] }),
+  kota: one(kota, { fields: [sentraProduksi.kodeKabKota], references: [kota.kode] }),
+  komoditas: one(komoditas, { fields: [sentraProduksi.komoditasId], references: [komoditas.id] }),
+}));
+
+export const pihpsHargaHarianRelations = relations(pihpsHargaHarian, ({ one }) => ({
+  provinsi: one(provinsi, { fields: [pihpsHargaHarian.kodeProvinsi], references: [provinsi.kode] }),
+  komoditas: one(komoditas, { fields: [pihpsHargaHarian.komoditasId], references: [komoditas.id] }),
+}));
+
+export const tpidAlertRelations = relations(tpidAlert, ({ one, many }) => ({
+  provinsi: one(provinsi, { fields: [tpidAlert.kodeProvinsi], references: [provinsi.kode] }),
+  kota: one(kota, { fields: [tpidAlert.kodeKabKota], references: [kota.kode] }),
+  komoditas: one(komoditas, { fields: [tpidAlert.komoditasId], references: [komoditas.id] }),
+  variant: one(variant, { fields: [tpidAlert.variantId], references: [variant.id] }),
+  actionLogs: many(tpidActionLog),
+}));
+
+export const tpidActionLogRelations = relations(tpidActionLog, ({ one }) => ({
+  alert: one(tpidAlert, { fields: [tpidActionLog.alertId], references: [tpidAlert.id] }),
+  user: one(tpidUser, { fields: [tpidActionLog.userId], references: [tpidUser.id] }),
+}));

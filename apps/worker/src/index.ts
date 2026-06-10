@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { Elysia } from 'elysia';
 import Redis from 'ioredis';
 import { fetchHargaHarian } from './jobs/fetchHargaHarian';
+import { syncPihps } from './jobs/pihps-ingest';
 import { runAIAnalysis } from './jobs/runAIAnalysis';
 import { syncMaster } from './jobs/syncMaster';
 
@@ -50,6 +51,19 @@ const aiAnalysisWorker = new Worker(
   },
 );
 
+// 4. PIHPS Ingestion Worker
+const pihpsSyncWorker = new Worker(
+  'pihps-sync',
+  async (job) => {
+    console.log(`[Worker] Processing PIHPS sync job: ${job.name} (id: ${job.id})`);
+    return await syncPihps(job.data);
+  },
+  {
+    connection,
+    concurrency: 1,
+  },
+);
+
 // Handle errors
 fetchWorker.on('failed', (job, err) => {
   console.error(`[Worker] Job ${job?.name} failed:`, err.message);
@@ -59,6 +73,9 @@ masterSyncWorker.on('failed', (job, err) => {
 });
 aiAnalysisWorker.on('failed', (job, err) => {
   console.error(`[Worker] AI analysis job ${job?.name} failed:`, err.message);
+});
+pihpsSyncWorker.on('failed', (job, err) => {
+  console.error(`[Worker] PIHPS sync job ${job?.name} failed:`, err.message);
 });
 
 // Health check server
@@ -70,6 +87,7 @@ const app = new Elysia()
       fetch: fetchWorker.isRunning(),
       masterSync: masterSyncWorker.isRunning(),
       aiAnalysis: aiAnalysisWorker.isRunning(),
+      pihpsSync: pihpsSyncWorker.isRunning(),
     },
   }))
   .listen(process.env.PORT || 3020);
@@ -88,11 +106,13 @@ const gracefulShutdown = async (signal: string) => {
     await fetchWorker.pause();
     await masterSyncWorker.pause();
     await aiAnalysisWorker.pause();
+    await pihpsSyncWorker.pause();
 
     // Close workers (wait for active jobs to finish)
     await fetchWorker.close();
     await masterSyncWorker.close();
     await aiAnalysisWorker.close();
+    await pihpsSyncWorker.close();
 
     // Disconnect Redis
     await connection.quit();

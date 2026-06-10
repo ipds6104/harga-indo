@@ -171,15 +171,15 @@ Berikut adalah daftar fitur yang perlu dibangun di platform Hargia sesuai dengan
 
 | Modul | Deskripsi Fitur | Prioritas | Status | Target Sub-App / Package |
 | :--- | :--- | :--- | :--- | :--- |
-| **Data Ingestion** | Integrasi API PIHPS BI sebagai fallback & baseline historis sejak 2016 (Gap 6 & 7) | Tinggi | `[ ]` Belum Mulai | `apps/worker`, `packages/db` |
-| **Data Ingestion** | Jalur Input Ringan via WhatsApp/Telegram Bot API untuk pasar terpencil (Seksi 7) | Sedang | `[ ]` Belum Mulai | `apps/api`, `apps/worker` |
-| **AI Engine** | Algoritma Dekomposisi Musiman (STL LOESS) untuk menyaring tren hari raya (Gap 2) | Tinggi | `[ ]` Belum Mulai | `apps/worker`, `packages/ai-client` |
-| **AI Engine** | Perhitungan Z-Score Dinamis & filter noise berdasarkan keaktifan `jumlah_pedagang` (Gap 2) | Tinggi | `[ ]` Belum Mulai | `apps/worker`, `packages/db` |
-| **AI Engine** | *Cooldown Period* (Masa Tunggu 3 Hari) sebelum alert resmi dipicu (Gap 4) | Tinggi | `[ ]` Belum Mulai | `apps/worker` |
-| **Security & Legal** | *Immutable Audit Trail* untuk pencatatan riwayat keputusan pejabat BPK-ready (Gap 9) | Tinggi | `[ ]` Belum Mulai | `packages/db`, `apps/api` |
-| **TPID Dashboard** | PWA Interface untuk persetujuan bertingkat (*Approval Kadisdag/Sekda*) (Gap 10) | Tinggi | `[ ]` Belum Mulai | `apps/web`, `apps/api` |
-| **TPID Dashboard** | Sistem Rekomendasi Aksi Taktis (Format DSS) di PWA (Gap 8) | Sedang | `[ ]` Belum Mulai | `apps/web` |
-| **Logistics Match** | Skema database `sentra_produksi` & integrasi pencocokan rute KAD surplus-defisit (Seksi 4) | Sedang | `[ ]` Belum Mulai | `packages/db`, `apps/api` |
-| **Feedback Loop** | Monitoring pasca-intervensi (T+3 s.d T+7), exit criteria (<5% HAP), & eskalasi SLA otomatis (Gap 4 & 5) | Tinggi | `[ ]` Belum Mulai | `apps/worker`, `apps/api` |
+| **Data Ingestion** | Integrasi API PIHPS BI sebagai fallback & baseline historis sejak 2016 (Gap 6 & 7) | Tinggi | `[x] Selesai` | `apps/worker`, `packages/db` |
+| **Data Ingestion** | Jalur Input Ringan via WhatsApp/Telegram Bot API untuk pasar terpencil (Seksi 7) | Sedang | `[x] Selesai` | `apps/api`, `apps/worker` |
+| **AI Engine** | Algoritma Dekomposisi Musiman (STL LOESS) untuk menyaring tren hari raya (Gap 2) | Tinggi | `[x] Selesai` | `apps/worker`, `packages/ai-client` |
+| **AI Engine** | Perhitungan Z-Score Dinamis & filter noise berdasarkan keaktifan `jumlah_pedagang` (Gap 2) | Tinggi | `[x] Selesai` | `apps/worker`, `packages/db` |
+| **AI Engine** | *Cooldown Period* (Masa Tunggu 3 Hari) sebelum alert resmi dipicu (Gap 4) | Tinggi | `[x] Selesai` | `apps/worker` |
+| **Security & Legal** | *Immutable Audit Trail* untuk pencatatan riwayat keputusan pejabat BPK-ready (Gap 9) | Tinggi | `[x] Selesai` | `packages/db`, `apps/api` |
+| **TPID Dashboard** | PWA Interface untuk persetujuan bertingkat (*Approval Kadisdag/Sekda*) (Gap 10) | Tinggi | `[x] Selesai` | `apps/web`, `apps/api` |
+| **TPID Dashboard** | Sistem Rekomendasi Aksi Taktis (Format DSS) di PWA (Gap 8) | Sedang | `[x] Selesai` | `apps/web` |
+| **Logistics Match** | Skema database `sentra_produksi` & integrasi pencocokan rute KAD surplus-defisit (Seksi 4) | Sedang | `[x] Selesai` | `packages/db`, `apps/api` |
+| **Feedback Loop** | Monitoring pasca-intervensi (T+3 s.d T+7), exit criteria (<5% HAP), & eskalasi SLA otomatis (Gap 4 & 5) | Tinggi | `[x] Selesai` | `apps/worker`, `apps/api` |
 
 

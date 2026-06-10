@@ -44,6 +44,8 @@
             <f7-list-item title="Dashboard Nasional" link="/dashboard" view=".view-main" panel-close></f7-list-item>
             <f7-list-item title="Laporan AI & Analisis" link="/laporan" view=".view-main" panel-close></f7-list-item>
             <f7-list-item title="Status Ingestion" link="/ingestion-status" view=".view-main" panel-close></f7-list-item>
+            <f7-list-item title="TPID Dashboard (HITL)" link="/tpid/dashboard" view=".view-main" panel-close></f7-list-item>
+            <f7-list-item title="TPID Audit Trail" link="/tpid/audit-trail" view=".view-main" panel-close></f7-list-item>
           </f7-list>
           
           <f7-block class="text-center" style="margin-top: 40px; color: hsl(var(--text-muted))">
@@ -68,6 +70,8 @@ import KomoditasDetailPage from './pages/KomoditasDetailPage.vue';
 import LaporanPage from './pages/LaporanPage.vue';
 import PasarListPage from './pages/PasarListPage.vue';
 import ProvinsiDetailPage from './pages/ProvinsiDetailPage.vue';
+import AuditTrail from './pages/tpid/AuditTrail.vue';
+import TpidDashboard from './pages/tpid/TpidDashboard.vue';
 
 export default {
   setup() {
@@ -119,6 +123,14 @@ export default {
         {
           path: '/ingestion-status',
           component: IngestionStatusPage,
+        },
+        {
+          path: '/tpid/dashboard',
+          component: TpidDashboard,
+        },
+        {
+          path: '/tpid/audit-trail',
+          component: AuditTrail,
         },
       ],
     };
