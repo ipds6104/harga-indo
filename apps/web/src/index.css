@@ -1,0 +1,344 @@
+/* Design System - Hargia */
+
+:root {
+  /* HSL Light Mode Values (Default) */
+  --bg-primary: 210 40% 98%;
+  --bg-secondary: 210 40% 95%;
+  --bg-tertiary: 210 40% 90%;
+
+  --accent-primary: 221.2 83.2% 53.3%; /* Vibrant Blue */
+  --accent-purple: 271.5 81.3% 55.9%; /* Premium Purple */
+  --accent-cyan: 199 89% 48%; /* High-tech Cyan */
+
+  --text-primary: 222.2 47.4% 11.2%;
+  --text-secondary: 215.4 16.3% 46.9%;
+  --text-muted: 215.4 16.3% 65%;
+
+  /* Statuses */
+  --status-success: 142 76% 36%;
+  --status-warning: 38 92% 50%;
+  --status-danger: 350 89% 60%;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+  --glass-blur: 16px;
+
+  /* Framework7 Custom Variable Bindings */
+  --f7-font-family: "Inter", -apple-system, sans-serif;
+  --f7-theme-color: hsl(var(--accent-primary));
+  --f7-bars-bg-color: hsl(var(--bg-secondary));
+  --f7-page-bg-color: hsl(var(--bg-primary));
+  --f7-text-color: hsl(var(--text-primary));
+}
+
+.theme-dark {
+  /* HSL Dark Mode Overrides */
+  --bg-primary: 222 47% 7%;
+  --bg-secondary: 222 47% 11%;
+  --bg-tertiary: 222 47% 16%;
+
+  --accent-primary: 210 100% 50%;
+  --accent-purple: 270 100% 60%;
+  --accent-cyan: 180 100% 45%;
+
+  --text-primary: 210 40% 98%;
+  --text-secondary: 215 25% 72%;
+  --text-muted: 215 16% 47%;
+
+  /* Statuses (Dark Mode) */
+  --status-success: 142 70% 45%;
+  --status-warning: 38 92% 50%;
+  --status-danger: 350 89% 50%;
+
+  /* Glassmorphism (Dark Mode) */
+  --glass-bg: rgba(15, 23, 42, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  /* Framework7 Custom Variable Bindings (Dark Mode) */
+  --f7-bars-bg-color: hsl(var(--bg-secondary));
+  --f7-page-bg-color: hsl(var(--bg-primary));
+  --f7-text-color: hsl(var(--text-primary));
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: hsl(var(--bg-primary));
+  color: hsl(var(--text-primary));
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.title-outfit {
+  font-family: "Outfit", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 20px;
+  padding: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px 0 rgba(59, 130, 246, 0.15);
+}
+
+/* Premium Gradients */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--accent-primary)) 0%, hsl(var(--accent-purple)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-cyan {
+  background: linear-gradient(135deg, hsl(var(--accent-cyan)) 0%, hsl(var(--accent-primary)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, hsl(var(--bg-secondary)) 0%, hsl(var(--bg-primary)) 100%);
+}
+
+.gradient-accent-bg {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--bg-primary));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--bg-tertiary));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--text-muted));
+}
+
+/* Micro Animations */
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 0.9;
+  }
+}
+
+.pulse-hover:hover {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+/* Typography styles */
+.text-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--text-muted));
+  font-weight: 600;
+}
+
+.text-title {
+  font-size: 1.1rem;
+  color: hsl(var(--text-primary));
+  font-weight: 600;
+}
+
+.text-price {
+  font-family: "Outfit", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: hsl(var(--text-primary));
+}
+
+/* Responsive grid layout helpers */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Badges styling */
+.badge-price {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-price.up {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: hsl(var(--status-danger));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-price.down {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: hsl(var(--status-success));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-price.stable {
+  background-color: rgba(100, 116, 139, 0.15);
+  color: hsl(var(--text-secondary));
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* Custom form inputs */
+.custom-input {
+  width: 100%;
+  background: hsl(var(--bg-secondary));
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: hsl(var(--text-primary));
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: hsl(var(--accent-primary));
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Toggle Personas Header */
+.persona-toggle {
+  background: hsl(var(--bg-secondary));
+  border-radius: 12px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.persona-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: hsl(var(--text-secondary));
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.persona-btn.active {
+  background: hsl(var(--bg-tertiary));
+  color: hsl(var(--text-primary));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--glass-border);
+}
+
+/* Framework7 Datepicker/List Input overrides to match Hargia aesthetics */
+.filter-col .list {
+  margin: 0 !important;
+  --f7-list-bg-color: transparent;
+  --f7-list-button-text-color: white;
+}
+.filter-col .item-content {
+  padding-left: 0 !important;
+  min-height: auto !important;
+}
+.filter-col .item-inner {
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: auto !important;
+}
+.filter-col .item-input-wrap {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.filter-col .item-input-wrap input {
+  width: 100% !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 14px 16px !important;
+  font-size: 0.9rem !important;
+  height: auto !important;
+  font-family: "Inter", sans-serif !important;
+  transition: all 0.3s;
+}
+.filter-col .item-input-wrap input:focus {
+  outline: none !important;
+  border-color: hsl(var(--accent-primary)) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+.filter-col .item-input-wrap .input-clear-button {
+  display: none !important; /* Hide clean button */
+}
+
+/* Shared Location Filters Grid Layout */
+.location-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.filter-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 576px) {
+  .location-filters {
+    grid-template-columns: 1fr;
+  }
+}

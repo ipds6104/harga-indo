@@ -1,0 +1,46 @@
+# Bun / Node
+node_modules/
+bun.lockb
+
+# Build outputs
+dist/
+build/
+.turbo/
+.next/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+.project
+.classpath
+.settings/
+
+# Research and temporary files
+research/harga-front/
+research/js_bundles/
+research/sp2kp/api_traffic.json
+reference/harga_legacy/
+

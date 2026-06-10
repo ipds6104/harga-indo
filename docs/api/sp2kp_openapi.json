@@ -1,0 +1,2764 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SP2KP Kemendag API",
+    "description": "API untuk mengambil data harga bahan pokok dari sp2kp.kemendag.go.id",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sp2kp.kemendag.go.id",
+      "description": "Production API server"
+    }
+  ],
+  "paths": {
+    "/master/api/variant": {
+      "get": {
+        "summary": "Endpoint /master/api/variant",
+        "parameters": [
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "99999"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "example": "true"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "[{\"selector\":\"order_public\",\"desc\":false}]"
+            }
+          },
+          {
+            "name": "tipe_komoditas_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          },
+                          "tipe_komoditas_id": {
+                            "type": "integer"
+                          },
+                          "tipe_komoditas": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              },
+                              "nama": {
+                                "type": "string"
+                              },
+                              "is_active": {
+                                "type": "boolean"
+                              },
+                              "tipe_pasar": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "kode": {
+                            "type": "string"
+                          },
+                          "kode_old": {
+                            "type": "string"
+                          },
+                          "komoditas_id": {
+                            "type": "integer"
+                          },
+                          "komoditas": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              },
+                              "kode": {
+                                "type": "string"
+                              },
+                              "kode_old": {
+                                "type": "string"
+                              },
+                              "nama": {
+                                "type": "string"
+                              },
+                              "deskripsi": {
+                                "type": "string"
+                              },
+                              "sequence": {
+                                "type": "integer"
+                              },
+                              "order": {
+                                "type": "integer"
+                              },
+                              "order_komoditas": {
+                                "type": "integer"
+                              },
+                              "tipe_komoditas_id": {
+                                "type": "integer"
+                              },
+                              "tipe_komoditas": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  },
+                                  "nama": {
+                                    "type": "string"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "tipe_pasar": {
+                                    "type": "string",
+                                    "nullable": true
+                                  }
+                                }
+                              },
+                              "is_active": {
+                                "type": "boolean"
+                              },
+                              "is_public": {
+                                "type": "boolean"
+                              },
+                              "variants": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "produk": {
+                                "type": "string",
+                                "nullable": true
+                              }
+                            }
+                          },
+                          "nama": {
+                            "type": "string"
+                          },
+                          "kode_kbki": {
+                            "type": "string"
+                          },
+                          "nama_kbki_bps": {
+                            "type": "string"
+                          },
+                          "deskripsi": {
+                            "type": "string"
+                          },
+                          "is_nasional": {
+                            "type": "boolean"
+                          },
+                          "is_active": {
+                            "type": "boolean"
+                          },
+                          "qty": {
+                            "type": "integer"
+                          },
+                          "harga_min": {
+                            "type": "integer"
+                          },
+                          "harga_max": {
+                            "type": "integer"
+                          },
+                          "kenaikan_max": {
+                            "type": "integer"
+                          },
+                          "penurunan_max": {
+                            "type": "integer"
+                          },
+                          "satuan_id": {
+                            "type": "integer"
+                          },
+                          "satuan": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              },
+                              "display": {
+                                "type": "string"
+                              },
+                              "deskripsi": {
+                                "type": "string"
+                              },
+                              "is_active": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "order": {
+                            "type": "integer"
+                          },
+                          "produk": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "created_at": {
+                                  "type": "string"
+                                },
+                                "updated_at": {
+                                  "type": "string"
+                                },
+                                "tipe_komoditas_id": {
+                                  "type": "integer"
+                                },
+                                "tipe_komoditas": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "tipe_pasar": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                },
+                                "kode": {
+                                  "type": "string"
+                                },
+                                "nama": {
+                                  "type": "string"
+                                },
+                                "deskripsi": {
+                                  "type": "string"
+                                },
+                                "komoditas_id": {
+                                  "type": "integer"
+                                },
+                                "komoditas": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    },
+                                    "kode": {
+                                      "type": "string"
+                                    },
+                                    "kode_old": {
+                                      "type": "string"
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "sequence": {
+                                      "type": "integer"
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "order_komoditas": {
+                                      "type": "integer"
+                                    },
+                                    "tipe_komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "tipe_komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "tipe_pasar": {
+                                          "type": "string",
+                                          "nullable": true
+                                        }
+                                      }
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "is_public": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "variants": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "produk": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                },
+                                "variant_id": {
+                                  "type": "integer"
+                                },
+                                "nama_variant": {
+                                  "type": "string"
+                                },
+                                "kode_variant": {
+                                  "type": "string"
+                                },
+                                "variant": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    },
+                                    "tipe_komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "tipe_komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "tipe_pasar": {
+                                          "type": "string",
+                                          "nullable": true
+                                        }
+                                      }
+                                    },
+                                    "kode": {
+                                      "type": "string"
+                                    },
+                                    "kode_old": {
+                                      "type": "string"
+                                    },
+                                    "komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        },
+                                        "kode": {
+                                          "type": "string"
+                                        },
+                                        "kode_old": {
+                                          "type": "string"
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "deskripsi": {
+                                          "type": "string"
+                                        },
+                                        "sequence": {
+                                          "type": "integer"
+                                        },
+                                        "order": {
+                                          "type": "integer"
+                                        },
+                                        "order_komoditas": {
+                                          "type": "integer"
+                                        },
+                                        "tipe_komoditas_id": {
+                                          "type": "integer"
+                                        },
+                                        "tipe_komoditas": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "integer"
+                                            },
+                                            "created_at": {
+                                              "type": "string"
+                                            },
+                                            "updated_at": {
+                                              "type": "string"
+                                            },
+                                            "nama": {
+                                              "type": "string"
+                                            },
+                                            "is_active": {
+                                              "type": "string",
+                                              "nullable": true
+                                            },
+                                            "tipe_pasar": {
+                                              "type": "string",
+                                              "nullable": true
+                                            }
+                                          }
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "is_public": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "variants": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "produk": {
+                                          "type": "string",
+                                          "nullable": true
+                                        }
+                                      }
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "kode_kbki": {
+                                      "type": "string"
+                                    },
+                                    "nama_kbki_bps": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "is_nasional": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "qty": {
+                                      "type": "integer"
+                                    },
+                                    "harga_min": {
+                                      "type": "integer"
+                                    },
+                                    "harga_max": {
+                                      "type": "integer"
+                                    },
+                                    "kenaikan_max": {
+                                      "type": "integer"
+                                    },
+                                    "penurunan_max": {
+                                      "type": "integer"
+                                    },
+                                    "satuan_id": {
+                                      "type": "integer"
+                                    },
+                                    "satuan": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        },
+                                        "display": {
+                                          "type": "string"
+                                        },
+                                        "deskripsi": {
+                                          "type": "string"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        }
+                                      }
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "produk": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "order_public": {
+                                      "type": "integer"
+                                    },
+                                    "is_public": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "coicop_7": {
+                                      "type": "string"
+                                    },
+                                    "coicop_10": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "photo_url": {
+                                  "type": "string"
+                                },
+                                "qty": {
+                                  "type": "integer"
+                                },
+                                "satuan_id": {
+                                  "type": "integer"
+                                },
+                                "satuan": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    },
+                                    "display": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                },
+                                "harga_min": {
+                                  "type": "integer"
+                                },
+                                "harga_max": {
+                                  "type": "integer"
+                                },
+                                "kenaikan_max": {
+                                  "type": "integer"
+                                },
+                                "penurunan_max": {
+                                  "type": "integer"
+                                },
+                                "is_active": {
+                                  "type": "boolean"
+                                },
+                                "order": {
+                                  "type": "integer"
+                                },
+                                "coicop_7": {
+                                  "type": "string"
+                                },
+                                "coicop_10": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "order_public": {
+                            "type": "integer"
+                          },
+                          "is_public": {
+                            "type": "boolean"
+                          },
+                          "coicop_7": {
+                            "type": "string"
+                          },
+                          "coicop_10": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "summary": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "last_page": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/api/latest-price-dates": {
+      "get": {
+        "summary": "Endpoint /report/api/latest-price-dates",
+        "parameters": [
+          {
+            "name": "tipe_komoditas_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tanggal": {
+                          "type": "string"
+                        },
+                        "tanggal_pembanding": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/master/api/komoditas": {
+      "get": {
+        "summary": "Endpoint /master/api/komoditas",
+        "parameters": [
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "1000000000"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "[{\"selector\":\"order\",\"desc\":false}]"
+            }
+          },
+          {
+            "name": "tipe_komoditas_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "1"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "example": "true"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "deskripsi": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "is_active": {
+                            "type": "boolean"
+                          },
+                          "is_public": {
+                            "type": "boolean"
+                          },
+                          "kode": {
+                            "type": "string"
+                          },
+                          "kode_old": {
+                            "type": "string"
+                          },
+                          "nama": {
+                            "type": "string"
+                          },
+                          "order": {
+                            "type": "integer"
+                          },
+                          "order_komoditas": {
+                            "type": "integer"
+                          },
+                          "produk": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "coicop_10": {
+                                  "type": "string"
+                                },
+                                "coicop_7": {
+                                  "type": "string"
+                                },
+                                "created_at": {
+                                  "type": "string"
+                                },
+                                "deskripsi": {
+                                  "type": "string"
+                                },
+                                "harga_max": {
+                                  "type": "integer"
+                                },
+                                "harga_min": {
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "is_active": {
+                                  "type": "boolean"
+                                },
+                                "kenaikan_max": {
+                                  "type": "integer"
+                                },
+                                "kode": {
+                                  "type": "string"
+                                },
+                                "kode_variant": {
+                                  "type": "string"
+                                },
+                                "komoditas": {
+                                  "type": "object",
+                                  "properties": {
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "is_public": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "kode": {
+                                      "type": "string"
+                                    },
+                                    "kode_old": {
+                                      "type": "string"
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "order_komoditas": {
+                                      "type": "integer"
+                                    },
+                                    "produk": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "sequence": {
+                                      "type": "integer"
+                                    },
+                                    "tipe_komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "tipe_pasar": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "tipe_komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    },
+                                    "variants": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                },
+                                "komoditas_id": {
+                                  "type": "integer"
+                                },
+                                "nama": {
+                                  "type": "string"
+                                },
+                                "nama_variant": {
+                                  "type": "string"
+                                },
+                                "order": {
+                                  "type": "integer"
+                                },
+                                "penurunan_max": {
+                                  "type": "integer"
+                                },
+                                "photo_url": {
+                                  "type": "string"
+                                },
+                                "qty": {
+                                  "type": "integer"
+                                },
+                                "satuan": {
+                                  "type": "object",
+                                  "properties": {
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "display": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "satuan_id": {
+                                  "type": "integer"
+                                },
+                                "tipe_komoditas": {
+                                  "type": "object",
+                                  "properties": {
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "tipe_pasar": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "tipe_komoditas_id": {
+                                  "type": "integer"
+                                },
+                                "updated_at": {
+                                  "type": "string"
+                                },
+                                "variant": {
+                                  "type": "object",
+                                  "properties": {
+                                    "coicop_10": {
+                                      "type": "string"
+                                    },
+                                    "coicop_7": {
+                                      "type": "string"
+                                    },
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "harga_max": {
+                                      "type": "integer"
+                                    },
+                                    "harga_min": {
+                                      "type": "integer"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "is_nasional": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "is_public": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "kenaikan_max": {
+                                      "type": "integer"
+                                    },
+                                    "kode": {
+                                      "type": "string"
+                                    },
+                                    "kode_kbki": {
+                                      "type": "string"
+                                    },
+                                    "kode_old": {
+                                      "type": "string"
+                                    },
+                                    "komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "deskripsi": {
+                                          "type": "string"
+                                        },
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "is_public": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "kode": {
+                                          "type": "string"
+                                        },
+                                        "kode_old": {
+                                          "type": "string"
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "order": {
+                                          "type": "integer"
+                                        },
+                                        "order_komoditas": {
+                                          "type": "integer"
+                                        },
+                                        "produk": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "sequence": {
+                                          "type": "integer"
+                                        },
+                                        "tipe_komoditas": {
+                                          "type": "object",
+                                          "properties": {
+                                            "created_at": {
+                                              "type": "string"
+                                            },
+                                            "id": {
+                                              "type": "integer"
+                                            },
+                                            "is_active": {
+                                              "type": "string",
+                                              "nullable": true
+                                            },
+                                            "nama": {
+                                              "type": "string"
+                                            },
+                                            "tipe_pasar": {
+                                              "type": "string",
+                                              "nullable": true
+                                            },
+                                            "updated_at": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        },
+                                        "tipe_komoditas_id": {
+                                          "type": "integer"
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        },
+                                        "variants": {
+                                          "type": "string",
+                                          "nullable": true
+                                        }
+                                      }
+                                    },
+                                    "komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "nama_kbki_bps": {
+                                      "type": "string"
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "order_public": {
+                                      "type": "integer"
+                                    },
+                                    "penurunan_max": {
+                                      "type": "integer"
+                                    },
+                                    "produk": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "qty": {
+                                      "type": "integer"
+                                    },
+                                    "satuan": {
+                                      "type": "object",
+                                      "properties": {
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "deskripsi": {
+                                          "type": "string"
+                                        },
+                                        "display": {
+                                          "type": "string"
+                                        },
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "satuan_id": {
+                                      "type": "integer"
+                                    },
+                                    "tipe_komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "tipe_pasar": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "tipe_komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "variant_id": {
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          },
+                          "sequence": {
+                            "type": "integer"
+                          },
+                          "tipe_komoditas": {
+                            "type": "object",
+                            "properties": {
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "is_active": {
+                                "type": "boolean"
+                              },
+                              "nama": {
+                                "type": "string"
+                              },
+                              "tipe_pasar": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "tipe_komoditas_id": {
+                            "type": "integer"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          },
+                          "variants": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "coicop_10": {
+                                  "type": "string"
+                                },
+                                "coicop_7": {
+                                  "type": "string"
+                                },
+                                "created_at": {
+                                  "type": "string"
+                                },
+                                "deskripsi": {
+                                  "type": "string"
+                                },
+                                "harga_max": {
+                                  "type": "integer"
+                                },
+                                "harga_min": {
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "is_active": {
+                                  "type": "boolean"
+                                },
+                                "is_nasional": {
+                                  "type": "boolean"
+                                },
+                                "is_public": {
+                                  "type": "boolean"
+                                },
+                                "kenaikan_max": {
+                                  "type": "integer"
+                                },
+                                "kode": {
+                                  "type": "string"
+                                },
+                                "kode_kbki": {
+                                  "type": "string"
+                                },
+                                "kode_old": {
+                                  "type": "string"
+                                },
+                                "komoditas": {
+                                  "type": "object",
+                                  "properties": {
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "is_public": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "kode": {
+                                      "type": "string"
+                                    },
+                                    "kode_old": {
+                                      "type": "string"
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "order_komoditas": {
+                                      "type": "integer"
+                                    },
+                                    "produk": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "sequence": {
+                                      "type": "integer"
+                                    },
+                                    "tipe_komoditas": {
+                                      "type": "object",
+                                      "properties": {
+                                        "created_at": {
+                                          "type": "string"
+                                        },
+                                        "id": {
+                                          "type": "integer"
+                                        },
+                                        "is_active": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "nama": {
+                                          "type": "string"
+                                        },
+                                        "tipe_pasar": {
+                                          "type": "string",
+                                          "nullable": true
+                                        },
+                                        "updated_at": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "tipe_komoditas_id": {
+                                      "type": "integer"
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    },
+                                    "variants": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                },
+                                "komoditas_id": {
+                                  "type": "integer"
+                                },
+                                "nama": {
+                                  "type": "string"
+                                },
+                                "nama_kbki_bps": {
+                                  "type": "string"
+                                },
+                                "order": {
+                                  "type": "integer"
+                                },
+                                "order_public": {
+                                  "type": "integer"
+                                },
+                                "penurunan_max": {
+                                  "type": "integer"
+                                },
+                                "produk": {
+                                  "type": "string",
+                                  "nullable": true
+                                },
+                                "qty": {
+                                  "type": "integer"
+                                },
+                                "satuan": {
+                                  "type": "object",
+                                  "properties": {
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "deskripsi": {
+                                      "type": "string"
+                                    },
+                                    "display": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "satuan_id": {
+                                  "type": "integer"
+                                },
+                                "tipe_komoditas": {
+                                  "type": "object",
+                                  "properties": {
+                                    "created_at": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "integer"
+                                    },
+                                    "is_active": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "nama": {
+                                      "type": "string"
+                                    },
+                                    "tipe_pasar": {
+                                      "type": "string",
+                                      "nullable": true
+                                    },
+                                    "updated_at": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "tipe_komoditas_id": {
+                                  "type": "integer"
+                                },
+                                "updated_at": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    },
+                    "summary": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "last_page": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/api/average-price/generate-perbandingan-harga": {
+      "post": {
+        "summary": "Endpoint /report/api/average-price/generate-perbandingan-harga",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tanggal": {
+                    "type": "string",
+                    "example": "2026-06-09"
+                  },
+                  "tanggal_pembanding": {
+                    "type": "string",
+                    "example": "2026-06-08"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Endpoint /report/api/average-price/generate-perbandingan-harga",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "variant_id": {
+                            "type": "integer"
+                          },
+                          "variant_nama": {
+                            "type": "string"
+                          },
+                          "satuan_display": {
+                            "type": "string"
+                          },
+                          "tanggal": {
+                            "type": "string"
+                          },
+                          "harga": {
+                            "type": "integer"
+                          },
+                          "tanggal_pembanding": {
+                            "type": "string"
+                          },
+                          "harga_pembanding": {
+                            "type": "integer"
+                          },
+                          "delta_harga": {
+                            "type": "integer"
+                          },
+                          "persen_perubahan": {
+                            "type": "number"
+                          },
+                          "status_perubahan": {
+                            "type": "string"
+                          },
+                          "is_regional": {
+                            "type": "boolean"
+                          },
+                          "region": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "region": {
+                                  "type": "string"
+                                },
+                                "satuan_display": {
+                                  "type": "string"
+                                },
+                                "harga": {
+                                  "type": "integer"
+                                },
+                                "harga_pembanding": {
+                                  "type": "integer"
+                                },
+                                "persen_perubahan": {
+                                  "type": "number"
+                                },
+                                "status_perubahan": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/master/api/wilayah/provinsi": {
+      "get": {
+        "summary": "Endpoint /master/api/wilayah/provinsi",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kode_provinsi": {
+                            "type": "string"
+                          },
+                          "nama_provinsi": {
+                            "type": "string"
+                          },
+                          "nama_singkat_provinsi": {
+                            "type": "string"
+                          },
+                          "wilayah": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/master/api/komoditas/{id}": {
+      "get": {
+        "summary": "Endpoint /master/api/komoditas/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID Komoditas"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "deskripsi": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "is_active": {
+                          "type": "boolean"
+                        },
+                        "is_public": {
+                          "type": "boolean"
+                        },
+                        "kode": {
+                          "type": "string"
+                        },
+                        "kode_old": {
+                          "type": "string"
+                        },
+                        "nama": {
+                          "type": "string"
+                        },
+                        "order": {
+                          "type": "integer"
+                        },
+                        "order_komoditas": {
+                          "type": "integer"
+                        },
+                        "produk": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "coicop_10": {
+                                "type": "string"
+                              },
+                              "coicop_7": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "deskripsi": {
+                                "type": "string"
+                              },
+                              "harga_max": {
+                                "type": "integer"
+                              },
+                              "harga_min": {
+                                "type": "integer"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "is_active": {
+                                "type": "boolean"
+                              },
+                              "kenaikan_max": {
+                                "type": "integer"
+                              },
+                              "kode": {
+                                "type": "string"
+                              },
+                              "kode_variant": {
+                                "type": "string"
+                              },
+                              "komoditas": {
+                                "type": "object",
+                                "properties": {
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "deskripsi": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "is_public": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "kode": {
+                                    "type": "string"
+                                  },
+                                  "kode_old": {
+                                    "type": "string"
+                                  },
+                                  "nama": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "type": "integer"
+                                  },
+                                  "order_komoditas": {
+                                    "type": "integer"
+                                  },
+                                  "produk": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "sequence": {
+                                    "type": "integer"
+                                  },
+                                  "tipe_komoditas": {
+                                    "type": "object",
+                                    "properties": {
+                                      "created_at": {
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "type": "integer"
+                                      },
+                                      "is_active": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "nama": {
+                                        "type": "string"
+                                      },
+                                      "tipe_pasar": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "updated_at": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "tipe_komoditas_id": {
+                                    "type": "integer"
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  },
+                                  "variants": {
+                                    "type": "string",
+                                    "nullable": true
+                                  }
+                                }
+                              },
+                              "komoditas_id": {
+                                "type": "integer"
+                              },
+                              "nama": {
+                                "type": "string"
+                              },
+                              "nama_variant": {
+                                "type": "string"
+                              },
+                              "order": {
+                                "type": "integer"
+                              },
+                              "penurunan_max": {
+                                "type": "integer"
+                              },
+                              "photo_url": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "integer"
+                              },
+                              "satuan": {
+                                "type": "object",
+                                "properties": {
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "deskripsi": {
+                                    "type": "string"
+                                  },
+                                  "display": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "satuan_id": {
+                                "type": "integer"
+                              },
+                              "tipe_komoditas": {
+                                "type": "object",
+                                "properties": {
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "nama": {
+                                    "type": "string"
+                                  },
+                                  "tipe_pasar": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "tipe_komoditas_id": {
+                                "type": "integer"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              },
+                              "variant": {
+                                "type": "object",
+                                "properties": {
+                                  "coicop_10": {
+                                    "type": "string"
+                                  },
+                                  "coicop_7": {
+                                    "type": "string"
+                                  },
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "deskripsi": {
+                                    "type": "string"
+                                  },
+                                  "harga_max": {
+                                    "type": "integer"
+                                  },
+                                  "harga_min": {
+                                    "type": "integer"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "is_nasional": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "is_public": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "kenaikan_max": {
+                                    "type": "integer"
+                                  },
+                                  "kode": {
+                                    "type": "string"
+                                  },
+                                  "kode_kbki": {
+                                    "type": "string"
+                                  },
+                                  "kode_old": {
+                                    "type": "string"
+                                  },
+                                  "komoditas": {
+                                    "type": "object",
+                                    "properties": {
+                                      "created_at": {
+                                        "type": "string"
+                                      },
+                                      "deskripsi": {
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "type": "integer"
+                                      },
+                                      "is_active": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "is_public": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "kode": {
+                                        "type": "string"
+                                      },
+                                      "kode_old": {
+                                        "type": "string"
+                                      },
+                                      "nama": {
+                                        "type": "string"
+                                      },
+                                      "order": {
+                                        "type": "integer"
+                                      },
+                                      "order_komoditas": {
+                                        "type": "integer"
+                                      },
+                                      "produk": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "sequence": {
+                                        "type": "integer"
+                                      },
+                                      "tipe_komoditas": {
+                                        "type": "object",
+                                        "properties": {
+                                          "created_at": {
+                                            "type": "string"
+                                          },
+                                          "id": {
+                                            "type": "integer"
+                                          },
+                                          "is_active": {
+                                            "type": "string",
+                                            "nullable": true
+                                          },
+                                          "nama": {
+                                            "type": "string"
+                                          },
+                                          "tipe_pasar": {
+                                            "type": "string",
+                                            "nullable": true
+                                          },
+                                          "updated_at": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      },
+                                      "tipe_komoditas_id": {
+                                        "type": "integer"
+                                      },
+                                      "updated_at": {
+                                        "type": "string"
+                                      },
+                                      "variants": {
+                                        "type": "string",
+                                        "nullable": true
+                                      }
+                                    }
+                                  },
+                                  "komoditas_id": {
+                                    "type": "integer"
+                                  },
+                                  "nama": {
+                                    "type": "string"
+                                  },
+                                  "nama_kbki_bps": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "type": "integer"
+                                  },
+                                  "order_public": {
+                                    "type": "integer"
+                                  },
+                                  "penurunan_max": {
+                                    "type": "integer"
+                                  },
+                                  "produk": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "qty": {
+                                    "type": "integer"
+                                  },
+                                  "satuan": {
+                                    "type": "object",
+                                    "properties": {
+                                      "created_at": {
+                                        "type": "string"
+                                      },
+                                      "deskripsi": {
+                                        "type": "string"
+                                      },
+                                      "display": {
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "type": "integer"
+                                      },
+                                      "is_active": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "updated_at": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "satuan_id": {
+                                    "type": "integer"
+                                  },
+                                  "tipe_komoditas": {
+                                    "type": "object",
+                                    "properties": {
+                                      "created_at": {
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "type": "integer"
+                                      },
+                                      "is_active": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "nama": {
+                                        "type": "string"
+                                      },
+                                      "tipe_pasar": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "updated_at": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "tipe_komoditas_id": {
+                                    "type": "integer"
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "variant_id": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "sequence": {
+                          "type": "integer"
+                        },
+                        "tipe_komoditas": {
+                          "type": "object",
+                          "properties": {
+                            "created_at": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "integer"
+                            },
+                            "is_active": {
+                              "type": "boolean"
+                            },
+                            "nama": {
+                              "type": "string"
+                            },
+                            "tipe_pasar": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "updated_at": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "tipe_komoditas_id": {
+                          "type": "integer"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        },
+                        "variants": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "coicop_10": {
+                                "type": "string"
+                              },
+                              "coicop_7": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "deskripsi": {
+                                "type": "string"
+                              },
+                              "harga_max": {
+                                "type": "integer"
+                              },
+                              "harga_min": {
+                                "type": "integer"
+                              },
+                              "id": {
+                                "type": "integer"
+                              },
+                              "is_active": {
+                                "type": "boolean"
+                              },
+                              "is_nasional": {
+                                "type": "boolean"
+                              },
+                              "is_public": {
+                                "type": "boolean"
+                              },
+                              "kenaikan_max": {
+                                "type": "integer"
+                              },
+                              "kode": {
+                                "type": "string"
+                              },
+                              "kode_kbki": {
+                                "type": "string"
+                              },
+                              "kode_old": {
+                                "type": "string"
+                              },
+                              "komoditas": {
+                                "type": "object",
+                                "properties": {
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "deskripsi": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "is_public": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "kode": {
+                                    "type": "string"
+                                  },
+                                  "kode_old": {
+                                    "type": "string"
+                                  },
+                                  "nama": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "type": "integer"
+                                  },
+                                  "order_komoditas": {
+                                    "type": "integer"
+                                  },
+                                  "produk": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "sequence": {
+                                    "type": "integer"
+                                  },
+                                  "tipe_komoditas": {
+                                    "type": "object",
+                                    "properties": {
+                                      "created_at": {
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "type": "integer"
+                                      },
+                                      "is_active": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "nama": {
+                                        "type": "string"
+                                      },
+                                      "tipe_pasar": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "updated_at": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "tipe_komoditas_id": {
+                                    "type": "integer"
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  },
+                                  "variants": {
+                                    "type": "string",
+                                    "nullable": true
+                                  }
+                                }
+                              },
+                              "komoditas_id": {
+                                "type": "integer"
+                              },
+                              "nama": {
+                                "type": "string"
+                              },
+                              "nama_kbki_bps": {
+                                "type": "string"
+                              },
+                              "order": {
+                                "type": "integer"
+                              },
+                              "order_public": {
+                                "type": "integer"
+                              },
+                              "penurunan_max": {
+                                "type": "integer"
+                              },
+                              "produk": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "qty": {
+                                "type": "integer"
+                              },
+                              "satuan": {
+                                "type": "object",
+                                "properties": {
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "deskripsi": {
+                                    "type": "string"
+                                  },
+                                  "display": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "satuan_id": {
+                                "type": "integer"
+                              },
+                              "tipe_komoditas": {
+                                "type": "object",
+                                "properties": {
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "is_active": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "nama": {
+                                    "type": "string"
+                                  },
+                                  "tipe_pasar": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "updated_at": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "tipe_komoditas_id": {
+                                "type": "integer"
+                              },
+                              "updated_at": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/api/average-price/province-comparison": {
+      "get": {
+        "summary": "Endpoint /report/api/average-price/province-comparison",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "52"
+            }
+          },
+          {
+            "name": "tanggal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-06-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tanggal": {
+                          "type": "string"
+                        },
+                        "tanggal_sebelumnya": {
+                          "type": "string"
+                        },
+                        "variant_id": {
+                          "type": "integer"
+                        },
+                        "variant_nama": {
+                          "type": "string"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kode_provinsi": {
+                                "type": "string"
+                              },
+                              "nama_provinsi": {
+                                "type": "string"
+                              },
+                              "harga": {
+                                "type": "number"
+                              },
+                              "harga_sebelumnya": {
+                                "type": "number"
+                              },
+                              "disparitas_pct": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/api/het-ha/latest": {
+      "get": {
+        "summary": "Endpoint /report/api/het-ha/latest",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "52"
+            }
+          },
+          {
+            "name": "tanggal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-06-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tipe": {
+                          "type": "string"
+                        },
+                        "tipe_referensi_harga_id": {
+                          "type": "integer"
+                        },
+                        "tanggal_het_ha": {
+                          "type": "string"
+                        },
+                        "tanggal_harga": {
+                          "type": "string"
+                        },
+                        "variant_id": {
+                          "type": "integer"
+                        },
+                        "variant_nama": {
+                          "type": "string"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kode_provinsi": {
+                                "type": "string"
+                              },
+                              "nama_provinsi": {
+                                "type": "string"
+                              },
+                              "group_wilayah": {
+                                "type": "string"
+                              },
+                              "harga": {
+                                "type": "integer"
+                              },
+                              "harga_harian": {
+                                "type": "number"
+                              },
+                              "disparitas_pct": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/api/average-price/hnt-disparity": {
+      "get": {
+        "summary": "Endpoint /report/api/average-price/hnt-disparity",
+        "parameters": [
+          {
+            "name": "variant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "52"
+            }
+          },
+          {
+            "name": "tanggal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-06-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tanggal": {
+                          "type": "string"
+                        },
+                        "variant_id": {
+                          "type": "integer"
+                        },
+                        "variant_nama": {
+                          "type": "string"
+                        },
+                        "hnt": {
+                          "type": "number"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kode_provinsi": {
+                                "type": "string"
+                              },
+                              "nama_provinsi": {
+                                "type": "string"
+                              },
+                              "harga": {
+                                "type": "number"
+                              },
+                              "disparitas_pct": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/api/hnt/history-series": {
+      "get": {
+        "summary": "Endpoint /report/api/hnt/history-series",
+        "parameters": [
+          {
+            "name": "tanggal_start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-05-10"
+            }
+          },
+          {
+            "name": "tanggal_end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-06-09"
+            }
+          },
+          {
+            "name": "variant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": "52"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tanggal_data": {
+                            "type": "string"
+                          },
+                          "harga": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "ingestion_log" ADD COLUMN "tipe_komoditas_id" integer DEFAULT 1 NOT NULL;

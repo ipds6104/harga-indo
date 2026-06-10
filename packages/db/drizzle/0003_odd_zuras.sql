@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "ingestion_log_dedup_idx" ON "ingestion_log" ("tanggal_fetch","pasar_id","tipe_komoditas_id","created_at");

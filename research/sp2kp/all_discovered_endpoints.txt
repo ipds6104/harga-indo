@@ -1,0 +1,8 @@
+/api/delete_cookie
+/api/intranet
+/api/satudata
+https://api-sp2kp.kemendag.go.id/auth/api
+https://api-sp2kp.kemendag.go.id/master/api
+https://api-sp2kp.kemendag.go.id/master/api/waktu-server
+https://api-sp2kp.kemendag.go.id/public/api
+https://api-sp2kp.kemendag.go.id/report/api

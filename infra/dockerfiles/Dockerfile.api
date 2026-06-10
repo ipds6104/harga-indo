@@ -1,0 +1,17 @@
+FROM oven/bun:1.3.10-slim AS builder
+WORKDIR /app
+
+# Copy root configurations
+COPY package.json turbo.json bun.lockb ./
+COPY apps/api ./apps/api
+COPY packages ./packages
+
+# Install dependencies and build
+RUN bun install --frozen-lockfile
+RUN bun build apps/api/src/index.ts --target=bun --outfile=dist/api.js
+
+FROM oven/bun:1.3.10-slim
+WORKDIR /app
+COPY --from=builder /app/dist/api.js ./api.js
+EXPOSE 3000
+CMD ["bun", "run", "api.js"]

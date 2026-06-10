@@ -1,0 +1,21 @@
+{
+  "name": "harga-indo",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.10",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "prepare": "lefthook install",
+    "dump": "bun tools/scripts/dump_structure.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "lefthook": "^1.6.10",
+    "turbo": "^2.0.4"
+  }
+}

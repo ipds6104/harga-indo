@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: harga-postgres
+    environment:
+      POSTGRES_USER: harga
+      POSTGRES_PASSWORD: harga_dev
+      POSTGRES_DB: harga_indo
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: harga-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --appendfsync everysec --save 60 1
+    volumes:
+      - redisdata:/data
+    restart: always
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: harga-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@harga.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    restart: always
+
+volumes:
+  pgdata:
+    name: harga_pgdata
+  redisdata:
+    name: harga_redisdata

@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    check:
+      glob: "*.{js,ts,jsx,tsx,json,vue}"
+      run: bun x biome check --write --no-errors-on-unmatched {staged_files} && git add {staged_files}

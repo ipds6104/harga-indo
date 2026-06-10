@@ -1,0 +1,20 @@
+{
+  "name": "@harga/scheduler",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --target=bun --outfile=dist/index.js"
+  },
+  "dependencies": {
+    "@elysiajs/cron": "^1.2.0",
+    "@harga/db": "workspace:*",
+    "@harga/shared": "workspace:*",
+    "bullmq": "^5.8.1",
+    "drizzle-orm": "^0.30.10",
+    "elysia": "^1.0.18",
+    "ioredis": "^5.4.1"
+  }
+}
