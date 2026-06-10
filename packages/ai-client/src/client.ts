@@ -61,6 +61,7 @@ export class AIClient {
           ],
           temperature: 0.1,
         }),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!response.ok) {
