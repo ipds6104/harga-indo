@@ -28,41 +28,62 @@ export interface DailySummaryResult {
 export class AIClient {
   private url: string;
   private key: string;
+  private model: string;
 
   constructor() {
-    this.url = process.env.AI_PROXY_URL || '';
-    this.key = process.env.AI_PROXY_KEY || '';
+    // Standard AI credentials matching fintr configurations
+    this.url = process.env.AI_BASE_URL || 'https://ai.dvlpid.my.id/v1';
+    this.key = process.env.AI_API_KEY || 'sk-af6376fcf20b4a148672456a6cae1902';
+    this.model = process.env.AI_MODEL || 'gemini-3-flash';
   }
 
-  private async callProxy<T>(endpoint: string, payload: any, fallbackData: T): Promise<T> {
+  private async callProxy<T>(
+    systemPrompt: string,
+    userPrompt: string,
+    fallbackData: T,
+  ): Promise<T> {
     if (!this.url || !this.key) {
-      // Return fallback stub data if not configured
       return fallbackData;
     }
 
     try {
-      const response = await fetch(`${this.url}${endpoint}`, {
+      const response = await fetch(`${this.url}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.key}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.1,
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`AI Proxy responded with status ${response.status}`);
       }
 
-      return (await response.json()) as T;
+      const data = (await response.json()) as {
+        choices: Array<{ message: { content: string } }>;
+      };
+
+      const content = data.choices[0]?.message?.content || '';
+
+      // Clean JSON markdown wrapper blocks if present
+      const jsonStr = content.replace(/```json\n?|\n?```/g, '').trim();
+      return JSON.parse(jsonStr) as T;
     } catch (error) {
-      console.error(`AI Proxy error on ${endpoint}:`, error);
+      console.error('AI Proxy error on completions API:', error);
       return fallbackData;
     }
   }
 
   async detectAnomalies(harga: HargaHarian, v: Variant | null): Promise<AnomalyResult> {
-    // Basic local rule validation as fallback/enhancer
+    // 1. Establish fallback/rules-based baseline first
     let isAnomaly = false;
     let reason = null;
     let severity: 'low' | 'medium' | 'high' = 'low';
@@ -81,13 +102,26 @@ export class AIClient {
 
     const fallback: AnomalyResult = { isAnomaly, reason, severity };
 
-    return this.callProxy<AnomalyResult>('/v1/detect-anomaly', { harga, variant: v }, fallback);
+    const systemPrompt = `Kamu adalah asisten AI TPID Indonesia yang bertugas menganalisis harga komoditas pangan untuk mendeteksi anomali.
+Analisis data harga harian saat ini terhadap batas Harga Eceran Tertinggi (HET) / Harga Acuan Penjualan (HAP).
+Kembalikan respon dalam format JSON saja, tanpa markdown atau teks penjelasan tambahan:
+{
+  "isAnomaly": boolean,
+  "reason": "Alasan singkat mengapa harga dianggap anomali (misal: melewati HAP atau kenaikan ekstrim)",
+  "severity": "low" | "medium" | "high"
+}`;
+
+    const userPrompt = `Komoditas: ${JSON.stringify(v)}
+Transaksi: ${JSON.stringify(harga)}`;
+
+    return this.callProxy<AnomalyResult>(systemPrompt, userPrompt, fallback);
   }
 
   async generateTrendNarrative(
     provinsi: string,
     history: { tanggal: string; harga: number; namaKomoditas: string }[],
   ): Promise<TrendResult> {
+    // 1. Establish fallback baseline
     const prices = history.map((h) => h.harga);
     const startPrice = prices[0] || 0;
     const endPrice = prices[prices.length - 1] || 0;
@@ -109,7 +143,19 @@ export class AIClient {
 
     const fallback: TrendResult = { trend, narrative, projection };
 
-    return this.callProxy<TrendResult>('/v1/generate-trend', { provinsi, history }, fallback);
+    const systemPrompt = `Kamu adalah analis pangan nasional yang menganalisis tren harga komoditas di wilayah Indonesia.
+Analisis data deret waktu harga historis dan tentukan tren harga serta proyeksi 3 hari ke depan.
+Kembalikan respon dalam format JSON saja, tanpa markdown atau teks penjelasan tambahan:
+{
+  "trend": "rising" | "stable" | "falling",
+  "narrative": "Penjelasan singkat dalam bahasa Indonesia mengenai pergerakan harga saat ini",
+  "projection": "Penjelasan singkat mengenai proyeksi harga 3 hari ke depan"
+}`;
+
+    const userPrompt = `Provinsi: ${provinsi}
+Riwayat Harga: ${JSON.stringify(history)}`;
+
+    return this.callProxy<TrendResult>(systemPrompt, userPrompt, fallback);
   }
 
   async generateManagementKPI(summaryData: {
@@ -118,6 +164,7 @@ export class AIClient {
     kenaikanTertinggi: string;
     daerahKritis: string[];
   }): Promise<KPIResult> {
+    // 1. Establish fallback baseline
     const status =
       summaryData.totalAnomali > 10
         ? 'critical'
@@ -139,13 +186,26 @@ export class AIClient {
       ],
     };
 
-    return this.callProxy<KPIResult>('/v1/generate-kpi', summaryData, fallback);
+    const systemPrompt = `Kamu adalah sekretaris eksekutif Kemenko Pangan yang menyusun KPI pengendalian inflasi nasional untuk manajemen tingkat tinggi.
+Berdasarkan ringkasan data nasional, buat skor KPI (0-100), status tingkat kerawanan, highlight utama, serta rekomendasi taktis.
+Kembalikan respon dalam format JSON saja, tanpa markdown atau teks penjelasan tambahan:
+{
+  "score": number,
+  "status": "normal" | "warning" | "critical",
+  "highlights": string[],
+  "recommendations": string[]
+}`;
+
+    const userPrompt = `Data Ringkasan Nasional: ${JSON.stringify(summaryData)}`;
+
+    return this.callProxy<KPIResult>(systemPrompt, userPrompt, fallback);
   }
 
   async generateDailySummary(
     pasarNama: string,
     hargaHarianList: { namaKomoditas: string; harga: number; perubahan: number }[],
   ): Promise<DailySummaryResult> {
+    // 1. Establish fallback baseline
     const naik = hargaHarianList.filter((h) => h.perubahan > 0).map((h) => h.namaKomoditas);
     const turun = hargaHarianList.filter((h) => h.perubahan < 0).map((h) => h.namaKomoditas);
 
@@ -168,10 +228,18 @@ export class AIClient {
       ],
     };
 
-    return this.callProxy<DailySummaryResult>(
-      '/v1/generate-daily-summary',
-      { pasarNama, hargaHarianList },
-      fallback,
-    );
+    const systemPrompt = `Kamu adalah asisten belanja ibu rumah tangga cerdas di Indonesia yang memberikan rekomendasi belanja hemat.
+Berdasarkan daftar harga komoditas di pasar tertentu, berikan judul saran belanja, ringkasan situasi pasar, dan tips berbelanja hemat.
+Kembalikan respon dalam format JSON saja, tanpa markdown atau teks penjelasan tambahan:
+{
+  "title": "Saran Belanja Pasar X",
+  "summary": "Ringkasan situasi harga pangan hari ini di pasar tersebut",
+  "tips": string[]
+}`;
+
+    const userPrompt = `Pasar: ${pasarNama}
+Daftar Harga: ${JSON.stringify(hargaHarianList)}`;
+
+    return this.callProxy<DailySummaryResult>(systemPrompt, userPrompt, fallback);
   }
 }
