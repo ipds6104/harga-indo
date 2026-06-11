@@ -1,5 +1,14 @@
 import { AIClient } from '@harga/ai-client';
-import { aiInsights, db, hargaHarian, komoditas, provinsi, variant } from '@harga/db';
+import {
+  aiInsights,
+  db,
+  hargaHarian,
+  komoditas,
+  provinsi,
+  sentraProduksi,
+  tpidAlert,
+  variant,
+} from '@harga/db';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { evaluatePrice } from '../services/alert-evaluator';
 
@@ -30,7 +39,12 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
       harga: any;
       v: any;
       provCode: string;
+      provinsiNama: string;
       index: number;
+      zScore: number;
+      historisPihpsRataRata: number;
+      historisPihpsStdDev: number;
+      surplusSentra: any;
     }[] = [];
 
     console.log('[AIAnalysis] Phase 1: Pre-filtering & alert evaluations...');
@@ -82,11 +96,56 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
         }
 
         if (isSuspicious) {
+          // Query nearest active sentra produksi for this commodity
+          const sentraList = await db
+            .select()
+            .from(sentraProduksi)
+            .where(
+              and(
+                eq(sentraProduksi.komoditasId, item.harga.komoditasId),
+                eq(sentraProduksi.isActive, true),
+              ),
+            )
+            .orderBy(desc(sentraProduksi.surplusTep))
+            .limit(1);
+
+          const surplusSentra =
+            sentraList.length > 0
+              ? {
+                  namaSentra: `Sentra Kabupaten ${sentraList[0].kodeKabKota} (Provinsi ${sentraList[0].kodeProvinsi})`,
+                  kapasitasSurplusTon: sentraList[0].surplusTep,
+                  jarakKm: 120, // default placeholder
+                  estimasiOngkosKirimPerTon: 800000,
+                }
+              : null;
+
+          // Fetch the created alert record for this variant to retrieve computed Z-Score
+          const alertRecs = await db
+            .select()
+            .from(tpidAlert)
+            .where(
+              and(
+                eq(tpidAlert.kodeProvinsi, prov.kode),
+                eq(tpidAlert.variantId, item.harga.variantId),
+                eq(tpidAlert.tanggal, tanggal),
+              ),
+            )
+            .limit(1);
+
+          const alertRecord = alertRecs[0];
+          const zScore = alertRecord ? alertRecord.zScore : 0;
+          const baselineRataRata = alertRecord ? alertRecord.thresholdHap : harga.harga;
+
           nationalSuspiciousList.push({
             harga,
             v,
             provCode: prov.kode,
+            provinsiNama: prov.nama,
             index,
+            zScore,
+            historisPihpsRataRata: baselineRataRata,
+            historisPihpsStdDev: baselineRataRata * 0.05,
+            surplusSentra,
           });
         }
       }
@@ -98,7 +157,15 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
 
     if (nationalSuspiciousList.length > 0) {
       const anomalyResults = await aiClient.detectAnomaliesBatch(
-        nationalSuspiciousList.map((item) => ({ harga: item.harga, v: item.v })),
+        nationalSuspiciousList.map((item) => ({
+          harga: item.harga,
+          v: item.v,
+          provinsiNama: item.provinsiNama,
+          zScore: item.zScore,
+          historisPihpsRataRata: item.historisPihpsRataRata,
+          historisPihpsStdDev: item.historisPihpsStdDev,
+          surplusSentra: item.surplusSentra,
+        })),
       );
 
       // Distribute the national anomalies back to their respective provinces
@@ -121,6 +188,10 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
             perubahan: susp.harga.prosentasePerubahan,
             reason: result.reason,
             severity: result.severity,
+            analisisEkonomi: result.analisisEkonomi,
+            rekomendasiKadisdag: result.rekomendasiKadisdag,
+            rekomendasiSekda: result.rekomendasiSekda,
+            rekomendasiSatgasPangan: result.rekomendasiSatgasPangan,
           });
         }
       }

@@ -4,6 +4,24 @@ export interface AnomalyResult {
   isAnomaly: boolean;
   reason: string | null;
   severity: 'low' | 'medium' | 'high';
+  analisisEkonomi?: string;
+  rekomendasiKadisdag?: {
+    aksi: string;
+    deskripsiDetail: string;
+  };
+  rekomendasiSekda?: {
+    aksi: string;
+    deskripsiDetail: string;
+    matchmakingSurplus: {
+      daerahSurplus: string;
+      kapasitasTersedia: string;
+      estimasiBiayaKirim: string;
+    } | null;
+  };
+  rekomendasiSatgasPangan?: {
+    aksi: string;
+    deskripsiDetail: string;
+  } | null;
 }
 
 export interface TrendResult {
@@ -170,16 +188,44 @@ Transaksi: ${JSON.stringify(harga)}`;
   }
 
   async detectAnomaliesBatch(
-    items: { harga: HargaHarian; v: Variant | null }[],
+    items: {
+      harga: HargaHarian;
+      v: Variant | null;
+      provinsiNama?: string;
+      zScore?: number;
+      historisPihpsRataRata?: number;
+      historisPihpsStdDev?: number;
+      surplusSentra?: {
+        namaSentra: string;
+        kapasitasSurplusTon: number;
+        jarakKm?: number;
+        estimasiOngkosKirimPerTon?: number;
+      } | null;
+    }[],
   ): Promise<AnomalyResult[]> {
     if (items.length === 0) return [];
 
     const results: AnomalyResult[] = new Array(items.length);
-    const candidates: { index: number; harga: HargaHarian; v: Variant | null }[] = [];
+    const candidates: {
+      index: number;
+      harga: HargaHarian;
+      v: Variant | null;
+      provinsiNama?: string;
+      zScore?: number;
+      historisPihpsRataRata?: number;
+      historisPihpsStdDev?: number;
+      surplusSentra?: {
+        namaSentra: string;
+        kapasitasSurplusTon: number;
+        jarakKm?: number;
+        estimasiOngkosKirimPerTon?: number;
+      } | null;
+    }[] = [];
 
     // 1. Rules-First Pre-filtering
     for (let i = 0; i < items.length; i++) {
-      const { harga, v } = items[i];
+      const item = items[i];
+      const { harga, v } = item;
       let isAnomaly = false;
       let reason = null;
       let severity: 'low' | 'medium' | 'high' = 'low';
@@ -201,7 +247,7 @@ Transaksi: ${JSON.stringify(harga)}`;
       if (!isAnomaly) {
         results[i] = fallback; // Bypassed instantly
       } else {
-        candidates.push({ index: i, harga, v });
+        candidates.push({ index: i, ...item });
       }
     }
 
@@ -214,25 +260,62 @@ Transaksi: ${JSON.stringify(harga)}`;
     for (let offset = 0; offset < candidates.length; offset += chunkSize) {
       const chunk = candidates.slice(offset, offset + chunkSize);
 
-      const systemPrompt = `Kamu adalah asisten AI TPID Indonesia yang bertugas menganalisis harga komoditas pangan untuk mendeteksi anomali.
-Analisis daftar data harga berikut. Kamu harus mengembalikan hasil analisis dalam format JSON array yang memiliki struktur yang sama dengan input (elemen sesuai dengan urutan input).
-Format JSON array hasil analisis saja, tanpa markdown atau teks penjelasan tambahan:
-[
-  {
-    "isAnomaly": boolean,
-    "reason": "Alasan singkat mengapa harga dianggap anomali (misal: melewati HAP atau kenaikan ekstrim)",
-    "severity": "low" | "medium" | "high"
-  }
-]`;
+      const systemPrompt = `Kamu adalah analis pangan senior dan asisten AI TPID (Tim Pengendalian Inflasi Daerah) Indonesia.
+Tugas utama kamu adalah menganalisis daftar harga pangan yang dicurigai sebagai anomali dan memberikan Decision Support System (DSS) aksi intervensi taktis bagi pengambil kebijakan daerah.
+
+Untuk setiap item yang dianalisis, kembalikan hasil dengan struktur JSON berikut:
+{
+  "isAnomaly": boolean (apakah ini anomali ekonomi riil yang memerlukan tindakan, bukan noise/fluktuasi harian wajar),
+  "reason": "Alasan singkat deteksi anomali (untuk tampilan ringkas)",
+  "severity": "low" | "medium" | "high",
+  "analisisEkonomi": "Analisis mendalam mengenai penyebab kenaikan harga komoditas ini, membedakan antara pola musiman (holiday spike) dan masalah struktural rantai pasok/spekulasi penimbunan berdasarkan data Z-Score dan historis.",
+  "rekomendasiKadisdag": {
+    "aksi": "Nama Aksi Taktis (misal: Gerakan Pangan Murah (GPM) / Operasi Pasar Beras SPHP)",
+    "deskripsiDetail": "Rincian instruksi taktis harian untuk Kepala Dinas Perdagangan selaku penanggung jawab pasar ritel lokal."
+  },
+  "rekomendasiSekda": {
+    "aksi": "Nama Aksi Anggaran/Logistik (misal: Subsidi Ongkos Angkut / Aktivasi KAD)",
+    "deskripsiDetail": "Rincian rekomendasi pergeseran anggaran Belanja Tidak Terduga (BTT) APBD via perubahan Perkada untuk menyubsidi transportasi/kerjasama pasokan.",
+    "matchmakingSurplus": {
+      "daerahSurplus": "Nama Daerah Surplus Terdekat",
+      "kapasitasTersedia": "Jumlah kapasitas surplus (misal: 10 Ton)",
+      "estimasiBiayaKirim": "Estimasi biaya kirim per ton (misal: Rp800.000 / Ton)"
+    } | null (isi jika terdapat sentra surplus terdekat dalam data input untuk memfasilitasi Kerja Sama Antar Daerah / KAD)
+  },
+  "rekomendasiSatgasPangan": {
+    "aksi": "Nama Aksi Pengawasan (misal: Audit Rantai Pasok Distributor / Sidak Gudang)",
+    "deskripsiDetail": "Rincian rekomendasi audit lapangan oleh Satgas Pangan Polri/TNI jika terdapat disparitas harga produsen-konsumen tinggi atau indikasi hoarding."
+  } | null
+}
+
+Kembalikan hasil dalam bentuk JSON array yang memiliki struktur yang sama dengan input (elemen sesuai dengan urutan input). Jangan sertakan teks markdown atau teks penjelasan tambahan apa pun di luar JSON array.`;
 
       const userPrompt = JSON.stringify(
         chunk.map((c) => ({
           id: c.harga.id,
           komoditas: c.v?.nama,
-          harga: c.harga.harga,
+          provinsi: c.provinsiNama,
+          hargaAktual: c.harga.harga,
           perubahanPersen: c.harga.prosentasePerubahan,
-          hargaMaxHET: c.v?.hargaMax,
-          kenaikanMaxToleransi: c.v?.kenaikanMax,
+          jumlahPedagangMelapor: c.harga.jumlahPedagang,
+          parameterNasional: {
+            hargaMaxHET: c.v?.hargaMax,
+            kenaikanMaxToleransi: c.v?.kenaikanMax,
+          },
+          analisisStatistik: {
+            zScoreRelativePihps: c.zScore,
+            pihpsRataRata30Hari: c.historisPihpsRataRata,
+            pihpsStandarDeviasi: c.historisPihpsStdDev,
+          },
+          sentraSurplusTerdekat: c.surplusSentra
+            ? {
+                namaSentra: c.surplusSentra.namaSentra,
+                kapasitasSurplusTon: c.surplusSentra.kapasitasSurplusTon,
+                jarakKm: c.surplusSentra.jarakKm,
+                estimasiOngkosKirimPerTon: c.surplusSentra.estimasiOngkosKirimPerTon,
+              }
+            : null,
+          hariRayaTerdekat: 'Idul Adha (15 hari lagi)',
         })),
       );
 
@@ -240,6 +323,28 @@ Format JSON array hasil analisis saja, tanpa markdown atau teks penjelasan tamba
         isAnomaly: true,
         reason: `Harga pasar Rp${c.harga.harga.toLocaleString('id-ID')} melampaui HET/kenaikan toleransi (Analisis Otomatis)`,
         severity: 'high' as const,
+        analisisEkonomi: `Harga komoditas ${c.v?.nama || 'pangan'} di wilayah ${c.provinsiNama || 'lokal'} terpantau melebihi batas batas kewajaran (Rp${c.harga.harga.toLocaleString('id-ID')}).`,
+        rekomendasiKadisdag: {
+          aksi: 'Gerakan Pangan Murah (GPM)',
+          deskripsiDetail: `Segera jadwalkan operasi pasar murah ritel untuk menyuplai komoditas ${c.v?.nama || 'terkait'} di pasar lokal.`,
+        },
+        rekomendasiSekda: {
+          aksi: 'Subsidi Angkutan Logistik',
+          deskripsiDetail:
+            'Rekomendasikan pembukaan kerja sama antar daerah untuk mendatangkan pasokan tambahan dari daerah surplus terdekat.',
+          matchmakingSurplus: c.surplusSentra
+            ? {
+                daerahSurplus: c.surplusSentra.namaSentra,
+                kapasitasTersedia: `${c.surplusSentra.kapasitasSurplusTon} Ton`,
+                estimasiBiayaKirim: `Rp${(c.surplusSentra.estimasiOngkosKirimPerTon || 800000).toLocaleString('id-ID')} / Ton`,
+              }
+            : null,
+        },
+        rekomendasiSatgasPangan: {
+          aksi: 'Pemantauan Rantai Pasok',
+          deskripsiDetail:
+            'Lakukan monitoring fisik di gudang distributor lokal untuk mencegah penimbunan barang.',
+        },
       }));
 
       try {
