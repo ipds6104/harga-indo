@@ -250,29 +250,30 @@ export async function fetchHargaHarian(payload: JobPayload) {
     console.log(`[FetchHargaHarian] Successfully ingested pasar_id=${pasar_id} in ${duration}ms`);
 
     // Check if this was the last market in this run to trigger AI analysis
-    try {
-      const [{ count }] = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(ingestionLog)
-        .where(eq(ingestionLog.runId, run_id));
+    if (payload.trigger_ai && payload.expected_count) {
+      try {
+        const [{ count }] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(ingestionLog)
+          .where(eq(ingestionLog.runId, run_id));
 
-      const [{ activeCount }] = await db
-        .select({ activeCount: sql<number>`count(*)` })
-        .from(pasar)
-        .where(eq(pasar.isActive, true));
-
-      if (Number(count) >= Number(activeCount) * 3) {
-        console.log(
-          `[FetchHargaHarian] All active markets for all commodities (${count}/${Number(activeCount) * 3}) processed. Triggering AI analysis...`,
-        );
-        const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-        const connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
-        const aiAnalysisQueue = new Queue('ai-analysis', { connection });
-        await aiAnalysisQueue.add('analyze-date', { tanggal: tanggal_end, runId: run_id });
-        await connection.quit();
+        if (Number(count) >= payload.expected_count) {
+          console.log(
+            `[FetchHargaHarian] All active markets processed (${count}/${payload.expected_count}). Triggering AI analysis...`,
+          );
+          const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+          const connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
+          const aiAnalysisQueue = new Queue('ai-analysis', { connection });
+          await aiAnalysisQueue.add(
+            'analyze-date',
+            { tanggal: tanggal_end, runId: run_id },
+            { jobId: `analyze-${tanggal_end}-${run_id}` },
+          );
+          await connection.quit();
+        }
+      } catch (e: any) {
+        console.error('[FetchHargaHarian] Error checking/enqueuing AI analysis job:', e.message);
       }
-    } catch (e: any) {
-      console.error('[FetchHargaHarian] Error checking/enqueuing AI analysis job:', e.message);
     }
 
     return { success: true, recordsFetched, durationMs: duration };

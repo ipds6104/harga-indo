@@ -18,6 +18,8 @@ export function buildFetchJobs(
   runId: string,
   priority: number,
   prefix = 'fetch',
+  triggerAi = false,
+  expectedCount?: number,
 ) {
   const jobs: any[] = [];
   for (const chunk of chunks) {
@@ -32,6 +34,8 @@ export function buildFetchJobs(
             tanggal_end: chunk.end,
             tipe_komoditas_id: tipe,
             run_id: runId,
+            trigger_ai: triggerAi,
+            expected_count: expectedCount,
           },
           opts: {
             priority,

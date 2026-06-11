@@ -36,6 +36,9 @@ export const triggerRoutes = new Elysia()
       }
 
       const commodities = [1, 2, 3];
+      const triggerAi = body.trigger_ai ?? false;
+      const expectedCount = triggerAi ? activePasars.length * commodities.length : undefined;
+
       const jobs = buildFetchJobs(
         activePasars,
         [{ start: targetDate, end: targetDate }],
@@ -43,6 +46,8 @@ export const triggerRoutes = new Elysia()
         runId,
         1,
         'fetch',
+        triggerAi,
+        expectedCount,
       );
 
       const chunkSize = 100;
@@ -63,12 +68,14 @@ export const triggerRoutes = new Elysia()
         tanggal: targetDate,
         totalJobs: jobs.length,
         runId,
+        triggerAi,
       };
     },
     {
       body: t.Object({
         type: t.Optional(t.String()),
         tanggal: t.Optional(t.String()),
+        trigger_ai: t.Optional(t.Boolean()),
       }),
     },
   );

@@ -137,4 +137,6 @@ export interface JobPayload {
   tanggal_end: string;
   tipe_komoditas_id: number;
   run_id: string;
+  trigger_ai?: boolean;
+  expected_count?: number;
 }

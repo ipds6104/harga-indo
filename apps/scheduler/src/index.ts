@@ -45,6 +45,8 @@ async function enqueueDailyFetch() {
       tanggal_end: today,
       tipe_komoditas_id: 1, // Sembako
       run_id: runId,
+      trigger_ai: true,
+      expected_count: activePasars.length,
     },
     opts: {
       priority: 1,
