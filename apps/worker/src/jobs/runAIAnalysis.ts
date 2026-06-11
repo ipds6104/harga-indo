@@ -1,4 +1,5 @@
 import { AIClient } from '@harga/ai-client';
+import type { AIContextDinamis } from '@harga/ai-client';
 import {
   aiInsights,
   db,
@@ -11,6 +12,7 @@ import {
 } from '@harga/db';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { evaluatePrice } from '../services/alert-evaluator';
+import { getDynamicContext } from '../services/dynamic-context';
 
 const aiClient = new AIClient();
 
@@ -19,6 +21,22 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
   console.log(`[AIAnalysis] Running analysis for date: ${tanggal} (run: ${runId})`);
 
   try {
+    // 0. Ambil konteks dinamis (hari raya, musim, kurs) SEKALI untuk seluruh run
+    // Ini menggantikan semua data hardcoded di AI prompt dan menjamin konsistensi epistemologis
+    const dynCtx = await getDynamicContext(tanggal);
+    const aiContextDinamis: AIContextDinamis = {
+      ringkasan: dynCtx.ringkasan,
+      hariRayaTerdekat: dynCtx.hariRayaTerdekat
+        ? { nama: dynCtx.hariRayaTerdekat.nama, hariLagi: dynCtx.hariRayaTerdekat.hariLagi }
+        : null,
+      musimKemarau: dynCtx.musim.musimKemarau,
+      panenBeras: dynCtx.musim.musimPanen.beras,
+      panenCabai: dynCtx.musim.musimPanen.cabai,
+      kursUsdIdr: dynCtx.kurs.usdIdr,
+      levelKurs: dynCtx.kurs.level,
+    };
+    console.log(`[AIAnalysis] Dynamic context loaded: ${dynCtx.ringkasan.substring(0, 100)}...`);
+
     // 1. Fetch all provinces
     const provList = await db.select().from(provinsi);
     console.log(`[AIAnalysis] Found ${provList.length} provinces to analyze.`);
@@ -166,6 +184,7 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
           historisPihpsStdDev: item.historisPihpsStdDev,
           surplusSentra: item.surplusSentra,
         })),
+        aiContextDinamis, // konteks real-time
       );
 
       // Distribute the national anomalies back to their respective provinces
@@ -311,12 +330,15 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
         ? `${priceIncreases[0].name} (+${priceIncreases[0].pct.toFixed(2)}%)`
         : 'Tidak ada kenaikan';
 
-    const kpiSummary = await aiClient.generateManagementKPI({
-      totalPasar: 1228,
-      totalAnomali: nationalAnomaliesCount,
-      kenaikanTertinggi,
-      daerahKritis: criticalRegions.slice(0, 5), // top 5 critical provinces
-    });
+    const kpiSummary = await aiClient.generateManagementKPI(
+      {
+        totalPasar: 1228,
+        totalAnomali: nationalAnomaliesCount,
+        kenaikanTertinggi,
+        daerahKritis: criticalRegions.slice(0, 5),
+      },
+      aiContextDinamis, // konteks real-time
+    );
 
     await db
       .insert(aiInsights)

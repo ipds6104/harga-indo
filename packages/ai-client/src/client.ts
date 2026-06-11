@@ -1,5 +1,17 @@
 import type { HargaHarian, Variant } from '@harga/shared';
 
+// Interface ringkas konteks dinamis yang dikirim dari worker ke AI client
+// Sumber: getDynamicContext() di apps/worker/src/services/dynamic-context.ts
+export interface AIContextDinamis {
+  ringkasan: string; // 1-3 kalimat konteks situasional (hari raya, musim, kurs)
+  hariRayaTerdekat: { nama: string; hariLagi: number } | null;
+  musimKemarau: boolean;
+  panenBeras: boolean;
+  panenCabai: boolean;
+  kursUsdIdr: number;
+  levelKurs: 'stabil' | 'melemah' | 'menguat';
+}
+
 export interface AnomalyResult {
   isAnomaly: boolean;
   reason: string | null;
@@ -202,6 +214,7 @@ Transaksi: ${JSON.stringify(harga)}`;
         estimasiOngkosKirimPerTon?: number;
       } | null;
     }[],
+    dynamicContext?: AIContextDinamis,
   ): Promise<AnomalyResult[]> {
     if (items.length === 0) return [];
 
@@ -260,35 +273,56 @@ Transaksi: ${JSON.stringify(harga)}`;
     for (let offset = 0; offset < candidates.length; offset += chunkSize) {
       const chunk = candidates.slice(offset, offset + chunkSize);
 
+      // Bangun blok konteks makro dari data real-time
+      const blokKonteksMakro = dynamicContext
+        ? `
+## KONTEKS MAKROEKONOMI & SITUASIONAL (Sumber: Data Real-Time)
+${dynamicContext.ringkasan}
+
+Faktor kunci untuk reasoning:
+- Hari Raya Terdekat: ${dynamicContext.hariRayaTerdekat ? `${dynamicContext.hariRayaTerdekat.nama} (H-${dynamicContext.hariRayaTerdekat.hariLagi} hari${dynamicContext.hariRayaTerdekat.hariLagi <= 0 ? ', sedang berlangsung' : ''})` : 'Tidak ada hari raya besar dalam 90 hari ke depan'}
+- Kondisi Musim: ${dynamicContext.musimKemarau ? 'Kemarau (risiko stres air, produksi turun)' : 'Hujan (risiko banjir lahan, distribusi terganggu)'}
+- Panen Beras: ${dynamicContext.panenBeras ? 'Fase panen raya (stok melimpah, harga cenderung turun)' : 'Off-season (stok menipis, harga rawan naik)'}
+- Panen Cabai: ${dynamicContext.panenCabai ? 'Puncak panen (pasokan tinggi)' : 'Off-season cabai (pasokan terbatas, harga volatile)'}
+- Kurs USD/IDR: ${dynamicContext.kursUsdIdr > 0 ? `Rp${dynamicContext.kursUsdIdr.toLocaleString('id-ID')} (${dynamicContext.levelKurs})` : 'Data tidak tersedia'}
+
+GUNAKAN konteks ini untuk membedakan:
+1. "Holiday spike" (demand-driven, sementara) → intervensi lunak (GPM, koordinasi distributor)
+2. "Supply shock" (structural, menetap) → intervensi keras (impor darurat, KAD lintas provinsi)
+3. "Spekulasi/hoarding" → intervensi Satgas Pangan (sidak gudang, pengawasan distributor)
+4. "Kurs shock" untuk komoditas impor (kedelai/gula) → koordinasi Kemendag pusat, bukan Pemda
+`
+        : '';
+
       const systemPrompt = `Kamu adalah analis pangan senior dan asisten AI TPID (Tim Pengendalian Inflasi Daerah) Indonesia.
 Tugas utama kamu adalah menganalisis daftar harga pangan yang dicurigai sebagai anomali dan memberikan Decision Support System (DSS) aksi intervensi taktis bagi pengambil kebijakan daerah.
-
+${blokKonteksMakro}
 Untuk setiap item yang dianalisis, kembalikan hasil dengan struktur JSON berikut:
 {
-  "isAnomaly": boolean (apakah ini anomali ekonomi riil yang memerlukan tindakan, bukan noise/fluktuasi harian wajar),
-  "reason": "Alasan singkat deteksi anomali (untuk tampilan ringkas)",
+  "isAnomaly": boolean (apakah ini anomali ekonomi riil yang memerlukan tindakan, bukan noise/fluktuasi harian wajar — pertimbangkan konteks makro di atas sebelum memutuskan),
+  "reason": "Alasan singkat deteksi anomali, sertakan faktor kontekstual (misal: 'Kenaikan pre-Lebaran wajar' atau 'Anomali struktural di luar pola musiman')",
   "severity": "low" | "medium" | "high",
-  "analisisEkonomi": "Analisis mendalam mengenai penyebab kenaikan harga komoditas ini, membedakan antara pola musiman (holiday spike) dan masalah struktural rantai pasok/spekulasi penimbunan berdasarkan data Z-Score dan historis.",
+  "analisisEkonomi": "Analisis mendalam yang membedakan: (1) apakah anomali ini demand-driven (hari raya/event), supply-driven (gagal panen/kemarau), atau spekulasi (hoarding/kartel). Gunakan Z-Score, data historis PIHPS, dan faktor musim/kurs yang diberikan.",
   "rekomendasiKadisdag": {
-    "aksi": "Nama Aksi Taktis (misal: Gerakan Pangan Murah (GPM) / Operasi Pasar Beras SPHP)",
-    "deskripsiDetail": "Rincian instruksi taktis harian untuk Kepala Dinas Perdagangan selaku penanggung jawab pasar ritel lokal."
+    "aksi": "Nama Aksi Taktis spesifik (misal: 'Koordinasi Distributor Bawang Merah dari Brebes' / 'GPM Beras SPHP di 5 pasar induk')",
+    "deskripsiDetail": "Instruksi taktis operasional harian yang bisa langsung dieksekusi oleh Kepala Dinas Perdagangan (target pasar, volume, mekanisme distribusi)."
   },
   "rekomendasiSekda": {
-    "aksi": "Nama Aksi Anggaran/Logistik (misal: Subsidi Ongkos Angkut / Aktivasi KAD)",
-    "deskripsiDetail": "Rincian rekomendasi pergeseran anggaran Belanja Tidak Terduga (BTT) APBD via perubahan Perkada untuk menyubsidi transportasi/kerjasama pasokan.",
+    "aksi": "Nama Aksi Strategis (misal: 'Aktivasi KAD Lintas Provinsi' / 'Perubahan Perkada BTT untuk Subsidi Angkut')",
+    "deskripsiDetail": "Rekomendasi pergeseran anggaran BTT APBD atau koordinasi lintas sektor untuk Sekda selaku koordinator TPID kabupaten/kota.",
     "matchmakingSurplus": {
-      "daerahSurplus": "Nama Daerah Surplus Terdekat",
-      "kapasitasTersedia": "Jumlah kapasitas surplus (misal: 10 Ton)",
-      "estimasiBiayaKirim": "Estimasi biaya kirim per ton (misal: Rp800.000 / Ton)"
-    } | null (isi jika terdapat sentra surplus terdekat dalam data input untuk memfasilitasi Kerja Sama Antar Daerah / KAD)
+      "daerahSurplus": "Nama Daerah Surplus",
+      "kapasitasTersedia": "Kapasitas surplus (misal: 10 Ton)",
+      "estimasiBiayaKirim": "Estimasi biaya kirim (misal: Rp800.000/Ton)"
+    } | null
   },
   "rekomendasiSatgasPangan": {
-    "aksi": "Nama Aksi Pengawasan (misal: Audit Rantai Pasok Distributor / Sidak Gudang)",
-    "deskripsiDetail": "Rincian rekomendasi audit lapangan oleh Satgas Pangan Polri/TNI jika terdapat disparitas harga produsen-konsumen tinggi atau indikasi hoarding."
+    "aksi": "Nama Aksi Pengawasan (misal: 'Sidak Gudang Distributor' / 'Audit Rantai Pasok Cold Storage')",
+    "deskripsiDetail": "Rekomendasi inspeksi fisik oleh Satgas Pangan Polri/TNI jika Z-Score tinggi tidak berkorelasi dengan faktor demand/supply yang wajar (indikasi hoarding/kartel)."
   } | null
 }
 
-Kembalikan hasil dalam bentuk JSON array yang memiliki struktur yang sama dengan input (elemen sesuai dengan urutan input). Jangan sertakan teks markdown atau teks penjelasan tambahan apa pun di luar JSON array.`;
+Kembalikan hasil dalam bentuk JSON array yang urutan elemennya sesuai dengan urutan input. Jangan sertakan teks markdown atau teks penjelasan tambahan apa pun di luar JSON array.`;
 
       const userPrompt = JSON.stringify(
         chunk.map((c) => ({
@@ -298,12 +332,30 @@ Kembalikan hasil dalam bentuk JSON array yang memiliki struktur yang sama dengan
           hargaAktual: c.harga.harga,
           perubahanPersen: c.harga.prosentasePerubahan,
           jumlahPedagangMelapor: c.harga.jumlahPedagang,
+          // Selisih harga aktual terhadap baseline PIHPS — berikan AI gambaran absolut, bukan hanya persentase
+          selisihDariBaselineRp:
+            c.historisPihpsRataRata && c.harga.harga
+              ? Math.round(c.harga.harga - c.historisPihpsRataRata)
+              : null,
           parameterNasional: {
             hargaMaxHET: c.v?.hargaMax,
             kenaikanMaxToleransi: c.v?.kenaikanMax,
+            // Berapa persen di atas HET? Lebih mudah di-reason AI daripada angka absolut
+            persenDiAtasHET:
+              c.v?.hargaMax && c.harga.harga
+                ? +(((c.harga.harga - c.v.hargaMax) / c.v.hargaMax) * 100).toFixed(1)
+                : null,
           },
           analisisStatistik: {
             zScoreRelativePihps: c.zScore,
+            interpretasiZScore:
+              c.zScore !== undefined
+                ? c.zScore > 3
+                  ? 'EKSTREM (>3σ) — sangat tidak biasa, kemungkinan besar anomali struktural atau data entry error'
+                  : c.zScore > 2.5
+                    ? 'TINGGI (>2.5σ) — melampaui ambang waspada, perlu verifikasi'
+                    : 'SEDANG (>1.5σ) — berada di zona waspada'
+                : 'Tidak tersedia',
             pihpsRataRata30Hari: c.historisPihpsRataRata,
             pihpsStandarDeviasi: c.historisPihpsStdDev,
           },
@@ -313,9 +365,16 @@ Kembalikan hasil dalam bentuk JSON array yang memiliki struktur yang sama dengan
                 kapasitasSurplusTon: c.surplusSentra.kapasitasSurplusTon,
                 jarakKm: c.surplusSentra.jarakKm,
                 estimasiOngkosKirimPerTon: c.surplusSentra.estimasiOngkosKirimPerTon,
+                // Hitung biaya total subsidi angkut untuk memudahkan rekomendasi Sekda
+                estimasiTotalBiayaSubsidiRp:
+                  c.surplusSentra.kapasitasSurplusTon && c.surplusSentra.estimasiOngkosKirimPerTon
+                    ? c.surplusSentra.kapasitasSurplusTon *
+                      c.surplusSentra.estimasiOngkosKirimPerTon
+                    : null,
               }
             : null,
-          hariRayaTerdekat: 'Idul Adha (15 hari lagi)',
+          // CATATAN: konteks makro (hari raya, musim, kurs) sudah ada di system prompt
+          // Ini mencegah duplikasi data dan menjaga user prompt tetap bersih/padat
         })),
       );
 
@@ -409,12 +468,15 @@ Riwayat Harga: ${JSON.stringify(history)}`;
     return this.callProxy<TrendResult>(systemPrompt, userPrompt, fallback);
   }
 
-  async generateManagementKPI(summaryData: {
-    totalPasar: number;
-    totalAnomali: number;
-    kenaikanTertinggi: string;
-    daerahKritis: string[];
-  }): Promise<KPIResult> {
+  async generateManagementKPI(
+    summaryData: {
+      totalPasar: number;
+      totalAnomali: number;
+      kenaikanTertinggi: string;
+      daerahKritis: string[];
+    },
+    dynamicContext?: AIContextDinamis,
+  ): Promise<KPIResult> {
     // 1. Establish fallback baseline
     const status =
       summaryData.totalAnomali > 10
@@ -437,8 +499,20 @@ Riwayat Harga: ${JSON.stringify(history)}`;
       ],
     };
 
-    const systemPrompt = `Kamu adalah sekretaris eksekutif Kemenko Pangan yang menyusun KPI pengendalian inflasi nasional untuk manajemen tingkat tinggi.
-Berdasarkan ringkasan data nasional, buat skor KPI (0-100), status tingkat kerawanan, highlight utama, serta rekomendasi taktis.
+    const konteksMakroKPI = dynamicContext
+      ? `\n\nKONTEKS MAKRO HARI INI: ${dynamicContext.ringkasan}`
+      : '';
+
+    const systemPrompt = `Kamu adalah sekretaris eksekutif Kemenko Pangan yang menyusun KPI pengendalian inflasi nasional untuk laporan harian Menteri.${konteksMakroKPI}
+
+Berdasarkan ringkasan data nasional, buat skor KPI (0-100), status tingkat kerawanan, highlight utama, serta rekomendasi taktis yang mempertimbangkan konteks makro (hari raya/musim/kurs) di atas.
+
+Skoring KPI:
+- 80-100: Normal — fluktuasi dalam batas wajar
+- 60-79: Warning — perlu perhatian khusus, siapkan rencana kontinjensi
+- 40-59: Critical — intervensi aktif diperlukan
+- <40: Crisis — eskalasi ke Menko Pangan/Presiden
+
 Kembalikan respon dalam format JSON saja, tanpa markdown atau teks penjelasan tambahan:
 {
   "score": number,
