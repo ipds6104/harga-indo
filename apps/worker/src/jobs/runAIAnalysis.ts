@@ -19,8 +19,23 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
     const criticalRegions: string[] = [];
     const priceIncreases: { name: string; pct: number }[] = [];
 
-    // Helper function to analyze a single province
-    const analyzeProvince = async (prov: (typeof provList)[0]) => {
+    // Map to store price records per province to avoid refetching during summaries/trends
+    const provPriceRecords: Map<string, any[]> = new Map();
+
+    // Map to store identified anomalies per province
+    const provAnomaliesMap: Map<string, any[]> = new Map();
+
+    // Accumulate all mathematical anomalies across the nation
+    const nationalSuspiciousList: {
+      harga: any;
+      v: any;
+      provCode: string;
+      index: number;
+    }[] = [];
+
+    console.log('[AIAnalysis] Phase 1: Pre-filtering & alert evaluations...');
+
+    for (const prov of provList) {
       // Fetch today's prices in this province
       const todayPrices = await db
         .select({
@@ -33,176 +48,192 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
         .leftJoin(komoditas, eq(hargaHarian.komoditasId, komoditas.id))
         .where(and(eq(hargaHarian.tanggal, tanggal), eq(hargaHarian.kodeProvinsi, prov.kode)));
 
-      if (todayPrices.length === 0) return null;
+      provPriceRecords.set(prov.kode, todayPrices);
 
-      console.log(
-        `[AIAnalysis] Analyzing ${todayPrices.length} price records in province ${prov.nama}`,
-      );
+      if (todayPrices.length === 0) continue;
 
-      const hargaHarianListForSummary: any[] = [];
-      const evaluationPromises: Promise<any>[] = [];
-
-      for (const item of todayPrices) {
-        // Build average representation
-        hargaHarianListForSummary.push({
-          namaKomoditas: item.v?.nama || 'Komoditas',
-          harga: item.harga.harga,
-          perubahan: item.harga.prosentasePerubahan,
-        });
-
-        // Evaluate price for TPID Alert & state machine in parallel
-        evaluationPromises.push(
-          evaluatePrice({
-            tanggal,
-            kodeProvinsi: prov.kode,
-            kodeKabKota: item.harga.kodeKabKota || '',
-            komoditasId: item.harga.komoditasId,
-            variantId: item.harga.variantId,
-            hargaRataRata: item.harga.harga,
-            jumlahPedagang: item.harga.jumlahPedagang,
-          }),
-        );
-      }
-
-      // Execute evaluations in parallel (fast DB ops)
-      await Promise.all(evaluationPromises);
-
-      // Batch detect anomalies for this province
-      const anomalyResults = await aiClient.detectAnomaliesBatch(
-        todayPrices.map((item) => ({ harga: item.harga, v: item.v })),
-      );
-
-      const provinceAnomalies: any[] = [];
-      let localAnomaliesCount = 0;
-      const localPriceIncreases: { name: string; pct: number }[] = [];
-
-      for (let i = 0; i < todayPrices.length; i++) {
-        const item = todayPrices[i];
-        const result = anomalyResults[i];
-
-        if (item.harga.prosentasePerubahan > 0) {
-          localPriceIncreases.push({
-            name: item.v?.nama || 'Komoditas',
-            pct: item.harga.prosentasePerubahan,
-          });
-        }
-
-        if (result.isAnomaly) {
-          provinceAnomalies.push({
-            komoditasId: item.harga.komoditasId,
-            variantId: item.harga.variantId,
-            nama: item.v?.nama || 'Komoditas',
-            harga: item.harga.harga,
-            perubahan: item.harga.prosentasePerubahan,
-            reason: result.reason,
-            severity: result.severity,
-          });
-          localAnomaliesCount++;
-        }
-      }
-
-      // If we have anomalies, write to AI Insights
-      if (provinceAnomalies.length > 0) {
-        await db
-          .insert(aiInsights)
-          .values({
-            id: crypto.randomUUID(),
-            tanggal,
-            kodeProvinsi: prov.kode,
-            tipe: 'anomaly',
-            kontenJson: JSON.stringify(provinceAnomalies),
-            modelUsed: 'gemini-1.5-flash-stub',
-          })
-          .onConflictDoNothing(); // prevent duplication
-      }
-
-      // Generate Trend Narrative
-      // Fetch last 7 days history for this province
-      const lastWeekPrices = await db
-        .select({
-          tanggal: hargaHarian.tanggal,
-          harga: hargaHarian.harga,
-          namaKomoditas: variant.nama,
-        })
-        .from(hargaHarian)
-        .leftJoin(variant, eq(hargaHarian.variantId, variant.id))
-        .where(
-          and(eq(hargaHarian.kodeProvinsi, prov.kode), sql`${hargaHarian.tanggal} <= ${tanggal}`),
-        )
-        .orderBy(desc(hargaHarian.tanggal))
-        .limit(100);
-
-      const historyData = lastWeekPrices.map((p) => ({
-        tanggal: p.tanggal,
-        harga: p.harga,
-        namaKomoditas: p.namaKomoditas || 'Komoditas',
-      }));
-
-      const trendResult = await aiClient.generateTrendNarrative(prov.nama, historyData);
-      await db
-        .insert(aiInsights)
-        .values({
-          id: crypto.randomUUID(),
+      // Evaluate price for TPID Alert & state machine in parallel
+      const evaluationPromises = todayPrices.map((item) =>
+        evaluatePrice({
           tanggal,
           kodeProvinsi: prov.kode,
-          tipe: 'trend',
-          kontenJson: JSON.stringify(trendResult),
-          modelUsed: 'gemini-1.5-flash-stub',
-        })
-        .onConflictDoNothing();
-
-      // Generate Daily Household Summary per province
-      const dailySummary = await aiClient.generateDailySummary(
-        `Provinsi ${prov.nama}`,
-        hargaHarianListForSummary.slice(0, 10), // feed top 10 items
-      );
-      await db
-        .insert(aiInsights)
-        .values({
-          id: crypto.randomUUID(),
-          tanggal,
-          kodeProvinsi: prov.kode,
-          tipe: 'summary',
-          kontenJson: JSON.stringify(dailySummary),
-          modelUsed: 'gemini-1.5-flash-stub',
-        })
-        .onConflictDoNothing();
-
-      return {
-        anomaliesCount: localAnomaliesCount,
-        priceIncreases: localPriceIncreases,
-        provNama: prov.nama,
-        hasAnomalies: provinceAnomalies.length > 0,
-      };
-    };
-
-    // Run provincial analysis in batches of 5 concurrent provinces
-    const concurrency = 5;
-    for (let i = 0; i < provList.length; i += concurrency) {
-      const batch = provList.slice(i, i + concurrency);
-      const batchResults = await Promise.all(
-        batch.map(async (prov) => {
-          try {
-            return await analyzeProvince(prov);
-          } catch (err: any) {
-            console.error(`[AIAnalysis] Failed to analyze province ${prov.nama}:`, err.message);
-            return null;
-          }
+          kodeKabKota: item.harga.kodeKabKota || '',
+          komoditasId: item.harga.komoditasId,
+          variantId: item.harga.variantId,
+          hargaRataRata: item.harga.harga,
+          jumlahPedagang: item.harga.jumlahPedagang,
         }),
       );
+      await Promise.all(evaluationPromises);
 
-      for (const res of batchResults) {
-        if (res) {
-          nationalAnomaliesCount += res.anomaliesCount;
-          priceIncreases.push(...res.priceIncreases);
-          if (res.hasAnomalies) {
-            criticalRegions.push(res.provNama);
+      // Rules-first pre-filtering check locally
+      for (let index = 0; index < todayPrices.length; index++) {
+        const item = todayPrices[index];
+        const v = item.v;
+        const harga = item.harga;
+        let isSuspicious = false;
+
+        if (v) {
+          if (v.hargaMax && harga.harga > v.hargaMax) {
+            isSuspicious = true;
+          } else if (v.kenaikanMax && harga.prosentasePerubahan > v.kenaikanMax) {
+            isSuspicious = true;
           }
+        }
+
+        if (isSuspicious) {
+          nationalSuspiciousList.push({
+            harga,
+            v,
+            provCode: prov.kode,
+            index,
+          });
         }
       }
     }
 
-    // 2. Generate National Management KPI Summary
+    console.log(
+      `[AIAnalysis] Phase 2: National AI Anomaly Detection Batch (${nationalSuspiciousList.length} suspicious prices found)`,
+    );
+
+    if (nationalSuspiciousList.length > 0) {
+      const anomalyResults = await aiClient.detectAnomaliesBatch(
+        nationalSuspiciousList.map((item) => ({ harga: item.harga, v: item.v })),
+      );
+
+      // Distribute the national anomalies back to their respective provinces
+      for (let i = 0; i < nationalSuspiciousList.length; i++) {
+        const susp = nationalSuspiciousList[i];
+        const result = anomalyResults[i];
+
+        if (result.isAnomaly) {
+          nationalAnomaliesCount++;
+
+          if (!provAnomaliesMap.has(susp.provCode)) {
+            provAnomaliesMap.set(susp.provCode, []);
+          }
+
+          provAnomaliesMap.get(susp.provCode)!.push({
+            komoditasId: susp.harga.komoditasId,
+            variantId: susp.harga.variantId,
+            nama: susp.v?.nama || 'Komoditas',
+            harga: susp.harga.harga,
+            perubahan: susp.harga.prosentasePerubahan,
+            reason: result.reason,
+            severity: result.severity,
+          });
+        }
+      }
+    }
+
+    console.log('[AIAnalysis] Phase 3: Generating Trend Narratives and Daily Summaries...');
+
+    // Process provincial insights (summaries & trends) in batches of 5 concurrent provinces
+    const concurrency = 5;
+    for (let i = 0; i < provList.length; i += concurrency) {
+      const batch = provList.slice(i, i + concurrency);
+      await Promise.all(
+        batch.map(async (prov) => {
+          try {
+            const todayPrices = provPriceRecords.get(prov.kode) || [];
+            if (todayPrices.length === 0) return;
+
+            const provinceAnomalies = provAnomaliesMap.get(prov.kode) || [];
+
+            // 1. Write anomaly to DB if exists
+            if (provinceAnomalies.length > 0) {
+              criticalRegions.push(prov.nama);
+              await db
+                .insert(aiInsights)
+                .values({
+                  id: crypto.randomUUID(),
+                  tanggal,
+                  kodeProvinsi: prov.kode,
+                  tipe: 'anomaly',
+                  kontenJson: JSON.stringify(provinceAnomalies),
+                  modelUsed: 'gemini-1.5-flash-stub',
+                })
+                .onConflictDoNothing(); // prevent duplication
+            }
+
+            // 2. Aggregate price increases for KPI
+            for (const item of todayPrices) {
+              if (item.harga.prosentasePerubahan > 0) {
+                priceIncreases.push({
+                  name: item.v?.nama || 'Komoditas',
+                  pct: item.harga.prosentasePerubahan,
+                });
+              }
+            }
+
+            // 3. Generate Trend Narrative
+            // Fetch last 7 days history for this province
+            const lastWeekPrices = await db
+              .select({
+                tanggal: hargaHarian.tanggal,
+                harga: hargaHarian.harga,
+                namaKomoditas: variant.nama,
+              })
+              .from(hargaHarian)
+              .leftJoin(variant, eq(hargaHarian.variantId, variant.id))
+              .where(
+                and(
+                  eq(hargaHarian.kodeProvinsi, prov.kode),
+                  sql`${hargaHarian.tanggal} <= ${tanggal}`,
+                ),
+              )
+              .orderBy(desc(hargaHarian.tanggal))
+              .limit(100);
+
+            const historyData = lastWeekPrices.map((p) => ({
+              tanggal: p.tanggal,
+              harga: p.harga,
+              namaKomoditas: p.namaKomoditas || 'Komoditas',
+            }));
+
+            const trendResult = await aiClient.generateTrendNarrative(prov.nama, historyData);
+            await db
+              .insert(aiInsights)
+              .values({
+                id: crypto.randomUUID(),
+                tanggal,
+                kodeProvinsi: prov.kode,
+                tipe: 'trend',
+                kontenJson: JSON.stringify(trendResult),
+                modelUsed: 'gemini-1.5-flash-stub',
+              })
+              .onConflictDoNothing();
+
+            // 4. Generate Daily Household Summary per province
+            const hargaHarianListForSummary = todayPrices.map((item) => ({
+              namaKomoditas: item.v?.nama || 'Komoditas',
+              harga: item.harga.harga,
+              perubahan: item.harga.prosentasePerubahan,
+            }));
+
+            const dailySummary = await aiClient.generateDailySummary(
+              `Provinsi ${prov.nama}`,
+              hargaHarianListForSummary.slice(0, 10), // feed top 10 items
+            );
+            await db
+              .insert(aiInsights)
+              .values({
+                id: crypto.randomUUID(),
+                tanggal,
+                kodeProvinsi: prov.kode,
+                tipe: 'summary',
+                kontenJson: JSON.stringify(dailySummary),
+                modelUsed: 'gemini-1.5-flash-stub',
+              })
+              .onConflictDoNothing();
+          } catch (err: any) {
+            console.error(`[AIAnalysis] Failed to analyze province ${prov.nama}:`, err.message);
+          }
+        }),
+      );
+    }
+
+    // 4. Generate National Management KPI Summary
     priceIncreases.sort((a, b) => b.pct - a.pct);
     const kenaikanTertinggi =
       priceIncreases.length > 0

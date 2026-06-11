@@ -209,8 +209,8 @@ Transaksi: ${JSON.stringify(harga)}`;
       return results;
     }
 
-    // 2. Batch call for mathematical anomalies in chunks of 30
-    const chunkSize = 30;
+    // 2. Batch call for mathematical anomalies in chunks of 150
+    const chunkSize = 150;
     for (let offset = 0; offset < candidates.length; offset += chunkSize) {
       const chunk = candidates.slice(offset, offset + chunkSize);
 
