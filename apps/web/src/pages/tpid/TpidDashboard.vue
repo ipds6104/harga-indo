@@ -4,12 +4,16 @@
 
     <!-- Role Switcher Panel -->
     <div class="tpid-section">
-      <div class="glass-card">
+      <div class="glass-card role-switcher-card">
         <h3 class="title-outfit card-title">Simulasi Peran Pejabat TPID</h3>
         <p class="card-subtitle">Pilih peran untuk menguji alur persetujuan bertingkat (Human-in-the-Loop).</p>
         <f7-segmented raised class="role-segmented">
-          <f7-button :active="selectedRole === 'kadisdag'" @click="setRole('kadisdag')">Kadisdag</f7-button>
-          <f7-button :active="selectedRole === 'sekda'" @click="setRole('sekda')">Sekda (Ketua TAPD)</f7-button>
+          <f7-button :active="selectedRole === 'kadisdag'" @click="setRole('kadisdag')">
+            💼 Kadisdag (Taktis)
+          </f7-button>
+          <f7-button :active="selectedRole === 'sekda'" @click="setRole('sekda')">
+            🏛️ Sekda (TAPD / BTT)
+          </f7-button>
         </f7-segmented>
       </div>
     </div>
@@ -38,7 +42,7 @@
         <!-- Card Header -->
         <div class="alert-header">
           <div>
-            <span class="region-badge">{{ item.provinsi?.nama }} - {{ item.kota?.nama || 'Seluruh Daerah' }}</span>
+            <span class="region-badge">📍 {{ item.provinsi?.nama }} - {{ item.kota?.nama || 'Seluruh Daerah' }}</span>
             <h3 class="commodity-title title-outfit">{{ item.variant?.nama }}</h3>
           </div>
           <span :class="['status-badge', 'status-' + item.alert.status]">
@@ -46,19 +50,35 @@
           </span>
         </div>
 
+        <!-- Regulatory Warning Banner -->
+        <div :class="['reg-warning-banner', 'reg-warning-' + item.variant?.jenisThreshold]">
+          <span v-if="item.variant?.jenisThreshold === 'HET'">
+            ⚠️ <strong>PELANGGARAN HET:</strong> Harga melebihi Harga Eceran Tertinggi yang MENGIKAT secara hukum (Kepbadan 299/2025 / Permendag 43/2025). Rekomendasi sanksi hukum berlaku.
+          </span>
+          <span v-else-if="item.variant?.jenisThreshold === 'HAP'">
+            ℹ️ <strong>DI ATAS HAP:</strong> Harga melebihi Harga Acuan Penjualan (Perbadan 12/2024). Tindakan: intervensi pasokan / subsidi angkut logistik (non-sanksi).
+          </span>
+          <span v-else-if="item.variant?.jenisThreshold === 'HA'">
+            ℹ️ <strong>DI ATAS HA:</strong> Harga melebihi Harga Acuan di tingkat produsen (Perbadan 12/2024).
+          </span>
+          <span v-else>
+            ⚠️ <strong>MELEBIHI AMBANG BATAS:</strong> Tidak diatur dalam HET/HAP nasional. Rekomendasi koordinasi pasokan lokal.
+          </span>
+        </div>
+
         <!-- Alert Details -->
         <div class="alert-details">
           <div class="detail-row">
-            <span class="detail-label">Harga Rata-rata:</span>
+            <span class="detail-label">Harga Rata-rata Eceran:</span>
             <span class="detail-value val-danger">Rp {{ item.alert.hargaRataRata.toLocaleString('id-ID') }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">HAP / HET Nasional:</span>
+            <span class="detail-label">Ambang Batas ({{ getThresholdLabel(item.variant?.jenisThreshold) }}):</span>
             <span class="detail-value">Rp {{ item.alert.thresholdHap.toLocaleString('id-ID') }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Volatilitas (Z-Score):</span>
-            <span class="detail-value">{{ item.alert.zScore.toFixed(2) }} (Ambang Batas: >{{ item.alert.komoditasId === 2 ? '2.50' : '1.50' }})</span>
+            <span class="detail-value">{{ item.alert.zScore.toFixed(2) }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Tanggal Deteksi:</span>
@@ -72,16 +92,61 @@
 
         <!-- Cooldown Information Banner -->
         <div class="info-banner info-banner--blue" v-if="item.alert.status === 'cooldown'">
-          🛡️ <strong>Masa Tunggu 3 Hari Aktif:</strong> Berdasarkan data historis, 67.87% gejolak harga jangka pendek mereda dengan sendirinya. Sistem menunda notifikasi resmi untuk menghindari pemborosan anggaran.
+          🛡️ <strong>Masa Tunggu 3 Hari Aktif:</strong> Berdasarkan data historis, gejolak harga jangka pendek sering mereda secara alami. Sistem menunda notifikasi resmi untuk menjaga efisiensi anggaran daerah.
         </div>
 
-        <!-- DSS Recommendation -->
-        <div class="info-banner info-banner--purple" v-if="item.alert.status !== 'cooldown' && item.alert.status !== 'resolved'">
-          <h4 class="title-outfit dss-title">💡 Rekomendasi Aksi Taktis (DSS)</h4>
-          <p class="dss-text">{{ getRecommendationText(item) }}</p>
-          <f7-button outline small round color="purple" class="matchmaker-btn" @click="openMatchmaker(item)">
-            🔍 Cari Sentra Surplus (Matchmaker)
-          </f7-button>
+        <!-- DSS Recommendation Panel (AI-Powered) -->
+        <div class="dss-panel" v-if="item.alert.status !== 'cooldown' && item.alert.status !== 'resolved'">
+          <div class="dss-card-header">
+            <span class="dss-sparkle">💡</span>
+            <h4 class="title-outfit dss-card-title">Decision Support System (AI-Powered)</h4>
+          </div>
+          
+          <!-- Economic Analysis Section -->
+          <div class="dss-analysis-section">
+            <h5 class="title-outfit section-subtitle">🔍 Analisis Risiko &amp; Penyebab (AI)</h5>
+            <p class="analysis-text">{{ item.alert.aiAnalisis || 'Menganalisis faktor penyebab lokal, musiman, dan makroekonomi...' }}</p>
+          </div>
+
+          <!-- Stakeholder Recommendations Tabs -->
+          <div class="dss-tabs-container">
+            <h5 class="title-outfit section-subtitle">📋 Rencana Aksi Direkomendasikan</h5>
+            
+            <div class="stakeholder-cards">
+              <!-- Kadisdag Action Card -->
+              <div class="stakeholder-card border-kadisdag" v-if="item.alert.aiKadisdagAksi">
+                <div class="stakeholder-header">
+                  <span class="badge-stakeholder bg-kadisdag">Kadisdag (Taktis)</span>
+                  <strong class="action-name">{{ item.alert.aiKadisdagAksi }}</strong>
+                </div>
+                <p class="action-desc">{{ item.alert.aiKadisdagDetail }}</p>
+              </div>
+
+              <!-- Sekda Action Card -->
+              <div class="stakeholder-card border-sekda" v-if="item.alert.aiSekdaAksi">
+                <div class="stakeholder-header">
+                  <span class="badge-stakeholder bg-sekda">Sekda (TAPD / BTT)</span>
+                  <strong class="action-name">{{ item.alert.aiSekdaAksi }}</strong>
+                </div>
+                <p class="action-desc">{{ item.alert.aiSekdaDetail }}</p>
+              </div>
+
+              <!-- Satgas Pangan Action Card -->
+              <div class="stakeholder-card border-satgas" v-if="item.alert.aiSatgasAksi">
+                <div class="stakeholder-header">
+                  <span class="badge-stakeholder bg-satgas">Satgas Pangan</span>
+                  <strong class="action-name">{{ item.alert.aiSatgasAksi }}</strong>
+                </div>
+                <p class="action-desc">{{ item.alert.aiSatgasDetail }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <f7-button outline small round color="purple" class="matchmaker-btn" @click="openMatchmaker(item)">
+              🔍 Cari Sentra Surplus (Matchmaker)
+            </f7-button>
+          </div>
         </div>
 
         <!-- Approval Form Area -->
@@ -227,25 +292,20 @@ export default {
       return labels[status] || status;
     };
 
+    const getThresholdLabel = (jenis) => {
+      const labels = {
+        HET: 'HET Nasional - Mengikat',
+        HAP: 'HAP Eceran - Acuan',
+        HA: 'HA Produsen - Acuan',
+        tidak_diatur: 'Threshold Internal',
+      };
+      return labels[jenis] || 'Acuan Penjualan';
+    };
+
     const canApprove = (status) => {
       if (selectedRole.value === 'kadisdag' && status === 'active_level_1') return true;
       if (selectedRole.value === 'sekda' && status === 'active_level_2') return true;
       return false;
-    };
-
-    const getRecommendationText = (item) => {
-      const isHorti = item.alert.komoditasId === 2;
-      const severityText = isHorti
-        ? 'volatilitas hortikultura tinggi'
-        : 'anomali harga pangan strategis';
-
-      if (item.alert.status === 'active_level_1') {
-        return `Deteksi gejolak ${severityText} terkonfirmasi di pasar lokal. Direkomendasikan kepada Kepala Dinas Perdagangan (Kadisdag) untuk menginstruksikan operasi pasar taktis skala mikro dan menyalurkan beras cadangan BULOG SPHP dalam 24 jam.`;
-      }
-      if (item.alert.status === 'active_level_2') {
-        return 'Operasi taktis telah diajukan oleh Kadisdag. Diperlukan otorisasi dari Sekretaris Daerah (Sekda) untuk pergeseran anggaran Belanja Tidak Terduga (BTT) APBD melalui perubahan Perkada berdasarkan SE Mendagri No. 500/4825/SJ guna subsidi ongkos angkut logistik penyeimbang harga.';
-      }
-      return 'Lakukan pemantauan harga harian eceran pasca intervensi.';
     };
 
     const submitApproval = async (alert, actionType) => {
@@ -331,8 +391,8 @@ export default {
       matches,
       setRole,
       getStatusLabel,
+      getThresholdLabel,
       canApprove,
-      getRecommendationText,
       submitApproval,
       openMatchmaker,
     };
@@ -378,6 +438,11 @@ export default {
 }
 
 /* ─── Role Switcher ──────────────────────────────────────────── */
+.role-switcher-card {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
 .role-segmented {
   margin-top: 14px;
   width: 100%;
@@ -391,7 +456,7 @@ export default {
   gap: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .region-badge {
@@ -407,6 +472,39 @@ export default {
 .commodity-title {
   margin: 0;
   font-size: 1.3rem;
+}
+
+/* ─── Regulatory Warning Banner ──────────────────────────────── */
+.reg-warning-banner {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-bottom: 14px;
+}
+
+.reg-warning-HET {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #ef4444;
+  color: #fca5a5;
+}
+
+.reg-warning-HAP {
+  background: rgba(245, 158, 11, 0.15);
+  border-left: 3px solid #f59e0b;
+  color: #fde047;
+}
+
+.reg-warning-HA {
+  background: rgba(59, 130, 246, 0.15);
+  border-left: 3px solid #3b82f6;
+  color: #93c5fd;
+}
+
+.reg-warning-tidak_diatur {
+  background: rgba(107, 114, 128, 0.15);
+  border-left: 3px solid #6b7280;
+  color: #d1d5db;
 }
 
 /* ─── Status Badges ──────────────────────────────────────────── */
@@ -504,21 +602,133 @@ export default {
   color: hsl(var(--text-secondary));
 }
 
-.info-banner--purple {
-  background: hsla(var(--accent-purple), 0.1);
-  border-color: hsl(var(--accent-purple));
-  color: hsl(var(--text-secondary));
+/* ─── DSS Panel (AI Powered) ─────────────────────────────────── */
+.dss-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.12), rgba(124, 58, 237, 0.05));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.dss-title {
+.dss-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  padding-bottom: 8px;
+}
+
+.dss-sparkle {
+  font-size: 1.1rem;
+}
+
+.dss-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #ddd6fe;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dss-analysis-section {
+  margin-bottom: 14px;
+}
+
+.section-subtitle {
   margin: 0 0 6px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a78bfa;
+}
+
+.analysis-text {
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.5;
   color: hsl(var(--text-primary));
 }
 
-.dss-text {
-  margin: 0 0 10px;
-  font-size: 0.83rem;
+.dss-tabs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stakeholder-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stakeholder-card {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.4);
+  border-left: 3px solid;
+}
+
+.border-kadisdag {
+  border-color: #f59e0b;
+}
+
+.border-sekda {
+  border-color: #ef4444;
+}
+
+.border-satgas {
+  border-color: #3b82f6;
+}
+
+.stakeholder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.badge-holder {
+  display: flex;
+  gap: 6px;
+}
+
+.badge-stakeholder {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.bg-kadisdag {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.bg-sekda {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.bg-satgas {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.action-name {
+  font-size: 0.8rem;
+  color: hsl(var(--text-primary));
+}
+
+.action-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: hsl(var(--text-secondary));
 }
 
 .matchmaker-btn {

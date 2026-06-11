@@ -405,6 +405,16 @@ export const tpidAlert = pgTable(
     zScore: doublePrecision('z_score').notNull(),
     jumlahPedagang: integer('jumlah_pedagang').notNull(),
     cooldownEndTanggal: varchar('cooldown_end_tanggal', { length: 10 }), // YYYY-MM-DD
+
+    // AI Insights & Decision Support System (DSS) recommendations
+    aiAnalisis: text('ai_analisis'),
+    aiKadisdagAksi: varchar('ai_kadisdag_aksi', { length: 255 }),
+    aiKadisdagDetail: text('ai_kadisdag_detail'),
+    aiSekdaAksi: varchar('ai_sekda_aksi', { length: 255 }),
+    aiSekdaDetail: text('ai_sekda_detail'),
+    aiSatgasAksi: varchar('ai_satgas_aksi', { length: 255 }),
+    aiSatgasDetail: text('ai_satgas_detail'),
+
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },

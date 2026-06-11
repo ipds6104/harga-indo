@@ -257,6 +257,7 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
             historisPihpsStdDev: baselineRataRata * 0.05,
             surplusSentra,
             neracaInfo,
+            alertId: alertRecord?.id ?? null,
           });
         }
       }
@@ -283,7 +284,7 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
 
       // Distribute the national anomalies back to their respective provinces
       for (let i = 0; i < nationalSuspiciousList.length; i++) {
-        const susp = nationalSuspiciousList[i];
+        const susp = nationalSuspiciousList[i] as any;
         const result = anomalyResults[i];
 
         if (result.isAnomaly) {
@@ -306,6 +307,23 @@ export async function runAIAnalysis(payload: { tanggal: string; runId: string })
             rekomendasiSekda: result.rekomendasiSekda,
             rekomendasiSatgasPangan: result.rekomendasiSatgasPangan,
           });
+
+          // Persistent updates to tpidAlert table with AI analysis and recommendations
+          if (susp.alertId) {
+            await db
+              .update(tpidAlert)
+              .set({
+                aiAnalisis: result.analisisEkonomi || null,
+                aiKadisdagAksi: result.rekomendasiKadisdag?.aksi || null,
+                aiKadisdagDetail: result.rekomendasiKadisdag?.deskripsiDetail || null,
+                aiSekdaAksi: result.rekomendasiSekda?.aksi || null,
+                aiSekdaDetail: result.rekomendasiSekda?.deskripsiDetail || null,
+                aiSatgasAksi: result.rekomendasiSatgasPangan?.aksi || null,
+                aiSatgasDetail: result.rekomendasiSatgasPangan?.deskripsiDetail || null,
+                updatedAt: new Date(),
+              })
+              .where(eq(tpidAlert.id, susp.alertId));
+          }
         }
       }
     }
