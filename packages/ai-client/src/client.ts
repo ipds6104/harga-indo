@@ -169,6 +169,100 @@ Transaksi: ${JSON.stringify(harga)}`;
     return this.callProxy<AnomalyResult>(systemPrompt, userPrompt, fallback);
   }
 
+  async detectAnomaliesBatch(
+    items: { harga: HargaHarian; v: Variant | null }[],
+  ): Promise<AnomalyResult[]> {
+    if (items.length === 0) return [];
+
+    const results: AnomalyResult[] = new Array(items.length);
+    const candidates: { index: number; harga: HargaHarian; v: Variant | null }[] = [];
+
+    // 1. Rules-First Pre-filtering
+    for (let i = 0; i < items.length; i++) {
+      const { harga, v } = items[i];
+      let isAnomaly = false;
+      let reason = null;
+      let severity: 'low' | 'medium' | 'high' = 'low';
+
+      if (v) {
+        if (v.hargaMax && harga.harga > v.hargaMax) {
+          isAnomaly = true;
+          reason = `Harga pasar Rp${harga.harga.toLocaleString('id-ID')} melampaui HET/Harga Max nasional Rp${v.hargaMax.toLocaleString('id-ID')}`;
+          severity = 'high';
+        } else if (v.kenaikanMax && harga.prosentasePerubahan > v.kenaikanMax) {
+          isAnomaly = true;
+          reason = `Kenaikan harga harian sebesar ${harga.prosentasePerubahan.toFixed(2)}% melebihi batas toleransi kenaikan max ${v.kenaikanMax}%`;
+          severity = 'medium';
+        }
+      }
+
+      const fallback: AnomalyResult = { isAnomaly, reason, severity };
+
+      if (!isAnomaly) {
+        results[i] = fallback; // Bypassed instantly
+      } else {
+        candidates.push({ index: i, harga, v });
+      }
+    }
+
+    if (candidates.length === 0) {
+      return results;
+    }
+
+    // 2. Batch call for mathematical anomalies in chunks of 30
+    const chunkSize = 30;
+    for (let offset = 0; offset < candidates.length; offset += chunkSize) {
+      const chunk = candidates.slice(offset, offset + chunkSize);
+
+      const systemPrompt = `Kamu adalah asisten AI TPID Indonesia yang bertugas menganalisis harga komoditas pangan untuk mendeteksi anomali.
+Analisis daftar data harga berikut. Kamu harus mengembalikan hasil analisis dalam format JSON array yang memiliki struktur yang sama dengan input (elemen sesuai dengan urutan input).
+Format JSON array hasil analisis saja, tanpa markdown atau teks penjelasan tambahan:
+[
+  {
+    "isAnomaly": boolean,
+    "reason": "Alasan singkat mengapa harga dianggap anomali (misal: melewati HAP atau kenaikan ekstrim)",
+    "severity": "low" | "medium" | "high"
+  }
+]`;
+
+      const userPrompt = JSON.stringify(
+        chunk.map((c) => ({
+          id: c.harga.id,
+          komoditas: c.v?.nama,
+          harga: c.harga.harga,
+          perubahanPersen: c.harga.prosentasePerubahan,
+          hargaMaxHET: c.v?.hargaMax,
+          kenaikanMaxToleransi: c.v?.kenaikanMax,
+        })),
+      );
+
+      const chunkFallbacks = chunk.map((c) => ({
+        isAnomaly: true,
+        reason: `Harga pasar Rp${c.harga.harga.toLocaleString('id-ID')} melampaui HET/kenaikan toleransi (Analisis Otomatis)`,
+        severity: 'high' as const,
+      }));
+
+      try {
+        const responseArray = await this.callProxy<AnomalyResult[]>(
+          systemPrompt,
+          userPrompt,
+          chunkFallbacks,
+        );
+
+        for (let i = 0; i < chunk.length; i++) {
+          results[chunk[i].index] = responseArray[i] || chunkFallbacks[i];
+        }
+      } catch (err) {
+        console.error('[AIClient] Batch anomaly analysis failed for chunk, using fallback:', err);
+        for (let i = 0; i < chunk.length; i++) {
+          results[chunk[i].index] = chunkFallbacks[i];
+        }
+      }
+    }
+
+    return results;
+  }
+
   async generateTrendNarrative(
     provinsi: string,
     history: { tanggal: string; harga: number; namaKomoditas: string }[],
