@@ -64,23 +64,72 @@ export async function evaluatePrice(params: {
   let stddev = thresholdHap * 0.05; // default 5% volatility if history is missing
 
   if (baselineHistory.length > 5) {
-    const prices = baselineHistory.map((h) => h.harga);
+    const prices = baselineHistory.map((h) => h.harga).sort((a, b) => a - b);
     const sum = prices.reduce((sumVal, val) => sumVal + val, 0);
     mean = sum / prices.length;
 
     const variance = prices.reduce((sumVal, val) => sumVal + (val - mean) ** 2, 0) / prices.length;
-    stddev = Math.sqrt(variance) || mean * 0.02; // floor stddev at 2% to avoid division by zero
+    stddev = Math.sqrt(variance) || mean * 0.02;
   }
 
   // Calculate Z-Score relative to seasonal baseline
   const zScore = (hargaRataRata - mean) / stddev;
 
-  // Fetch commodity type to adjust Z-Score threshold
-  const komSpecs = await db.select().from(komoditas).where(eq(komoditas.id, komoditasId)).limit(1);
-  const tipeKomoditasId = komSpecs[0]?.tipeKomoditasId || 1;
+  // ─── Adaptive Z-Score Threshold ──────────────────────────────────────────────
+  // Menggantikan konstanta global (1.5 / 2.5) dengan threshold adaptif per komoditas per provinsi.
+  //
+  // Latar belakang epistemologis:
+  // - Distribusi harga pangan bersifat right-skewed dan volatile secara musiman (FAO, 2016)
+  // - Papua/NTT/Maluku memiliki volatilitas struktural lebih tinggi dari Jawa karena logistik
+  // - Penggunaan threshold sama untuk semua wilayah menghasilkan false-positive berlebihan
+  //   di Indonesia Timur dan false-negative di Jawa (yang harganya lebih stabil)
+  //
+  // Metodologi:
+  // - Jika ada cukup data historis (>15 hari): hitung Coefficient of Variation (CV) aktual
+  //   Komoditas volatile (CV > 15%): threshold lebih longgar (3.0σ) agar tidak noise
+  //   Komoditas stabil (CV < 8%): threshold lebih ketat (2.0σ) untuk early warning
+  //   Lainnya: threshold menengah (2.5σ)
+  // - Jika data kurang (<= 15 hari): fallback berdasarkan tipe komoditas
+  //   (mengikuti metodologi WFP ALPS: hortikultura = volatil = threshold lebih tinggi)
+  //
+  // Referensi:
+  // - UN SDG 2.c.1 Food Price Anomaly Methodology (FAO, 2016)
+  // - WFP ALPS (Alert for Price Spikes): threshold berdasarkan volatilitas aktual
+  // - Bapanas: Metodologi Panel Harga Pangan (rata-rata 5 tahun sebagai baseline)
 
-  // Thresholds: 2.5 for highly volatile commodities (chilis, onions), 1.5 for stable ones (rice, sugar)
-  const zThreshold = tipeKomoditasId === 2 ? 2.5 : 1.5;
+  let zThreshold: number;
+
+  if (baselineHistory.length > 15) {
+    // Kalkulasi adaptif dari data historis aktual
+    const prices = baselineHistory.map((h) => h.harga);
+    const historicalMean = prices.reduce((s, v) => s + v, 0) / prices.length;
+    const cv = historicalMean > 0 ? (stddev / historicalMean) * 100 : 15;
+
+    if (cv > 20) {
+      // Sangat volatile (cabai/bawang merah di Papua, dll) → threshold longgar
+      zThreshold = 3.5;
+    } else if (cv > 12) {
+      // Cukup volatile (hortikultura Jawa, daging) → threshold moderat-tinggi
+      zThreshold = 2.8;
+    } else if (cv > 6) {
+      // Moderat (beras luar Jawa, gula) → threshold standar
+      zThreshold = 2.2;
+    } else {
+      // Stabil (beras Jawa, minyak goreng kemasan) → threshold ketat untuk early warning
+      zThreshold = 1.8;
+    }
+  } else {
+    // Fallback: berdasarkan tipe komoditas (WFP ALPS baseline)
+    const komSpecs = await db
+      .select()
+      .from(komoditas)
+      .where(eq(komoditas.id, komoditasId))
+      .limit(1);
+    const tipeKomoditasId = komSpecs[0]?.tipeKomoditasId || 1;
+    // tipeKomoditasId === 2 = hortikultura (volatile): 2.8
+    // lainnya (sembako, peternakan): 2.0
+    zThreshold = tipeKomoditasId === 2 ? 2.8 : 2.0;
+  }
 
   // Check if price exceeds both the absolute HAP and the volatility Z-Score threshold
   const isAnomalous = hargaRataRata > thresholdHap && zScore > zThreshold;

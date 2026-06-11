@@ -1,0 +1,1513 @@
+{
+  "id": "41dd9abd-3af9-4921-afbf-ec649f52206f",
+  "prevId": "6c58a295-3eca-452f-a3fd-38573d900471",
+  "version": "6",
+  "dialect": "postgresql",
+  "tables": {
+    "public.ai_insights": {
+      "name": "ai_insights",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tanggal": {
+          "name": "tanggal",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipe": {
+          "name": "tipe",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "konten_json": {
+          "name": "konten_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_used": {
+          "name": "model_used",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ai_insights_kode_provinsi_provinsi_kode_fk": {
+          "name": "ai_insights_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "ai_insights",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ai_insights_komoditas_id_komoditas_id_fk": {
+          "name": "ai_insights_komoditas_id_komoditas_id_fk",
+          "tableFrom": "ai_insights",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.harga_harian": {
+      "name": "harga_harian",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pasar_id": {
+          "name": "pasar_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "produk_id": {
+          "name": "produk_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "satuan_id": {
+          "name": "satuan_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tanggal": {
+          "name": "tanggal",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga": {
+          "name": "harga",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga_sebelumnya": {
+          "name": "harga_sebelumnya",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prosentase_perubahan": {
+          "name": "prosentase_perubahan",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kuantitas": {
+          "name": "kuantitas",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pasokan": {
+          "name": "pasokan",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jumlah_pedagang": {
+          "name": "jumlah_pedagang",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kode_kab_kota": {
+          "name": "kode_kab_kota",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_verifikasi_1": {
+          "name": "status_verifikasi_1",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verifikasi_1_at": {
+          "name": "verifikasi_1_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_verifikasi_2": {
+          "name": "status_verifikasi_2",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verifikasi_2_at": {
+          "name": "verifikasi_2_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "is_closed": {
+          "name": "is_closed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_harga_still_zero": {
+          "name": "is_harga_still_zero",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "harga_harian_pasar_tanggal_idx": {
+          "name": "harga_harian_pasar_tanggal_idx",
+          "columns": ["pasar_id", "tanggal"],
+          "isUnique": false
+        },
+        "harga_harian_provinsi_tanggal_idx": {
+          "name": "harga_harian_provinsi_tanggal_idx",
+          "columns": ["kode_provinsi", "tanggal"],
+          "isUnique": false
+        },
+        "harga_harian_variant_tanggal_idx": {
+          "name": "harga_harian_variant_tanggal_idx",
+          "columns": ["variant_id", "tanggal"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "harga_harian_pasar_id_pasar_id_fk": {
+          "name": "harga_harian_pasar_id_pasar_id_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "pasar",
+          "columnsFrom": ["pasar_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_komoditas_id_komoditas_id_fk": {
+          "name": "harga_harian_komoditas_id_komoditas_id_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_variant_id_variant_id_fk": {
+          "name": "harga_harian_variant_id_variant_id_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "variant",
+          "columnsFrom": ["variant_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_produk_id_produk_id_fk": {
+          "name": "harga_harian_produk_id_produk_id_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "produk",
+          "columnsFrom": ["produk_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_satuan_id_satuan_id_fk": {
+          "name": "harga_harian_satuan_id_satuan_id_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "satuan",
+          "columnsFrom": ["satuan_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_kode_provinsi_provinsi_kode_fk": {
+          "name": "harga_harian_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_kode_kab_kota_kota_kode_fk": {
+          "name": "harga_harian_kode_kab_kota_kota_kode_fk",
+          "tableFrom": "harga_harian",
+          "tableTo": "kota",
+          "columnsFrom": ["kode_kab_kota"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.harga_harian_detail": {
+      "name": "harga_harian_detail",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "harga_harian_id": {
+          "name": "harga_harian_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pedagang_id": {
+          "name": "pedagang_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga": {
+          "name": "harga",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga_sebelumnya": {
+          "name": "harga_sebelumnya",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tanggal_sebelumnya": {
+          "name": "tanggal_sebelumnya",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "harga_detail_harga_harian_idx": {
+          "name": "harga_detail_harga_harian_idx",
+          "columns": ["harga_harian_id"],
+          "isUnique": false
+        },
+        "harga_detail_pedagang_idx": {
+          "name": "harga_detail_pedagang_idx",
+          "columns": ["pedagang_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "harga_harian_detail_harga_harian_id_harga_harian_id_fk": {
+          "name": "harga_harian_detail_harga_harian_id_harga_harian_id_fk",
+          "tableFrom": "harga_harian_detail",
+          "tableTo": "harga_harian",
+          "columnsFrom": ["harga_harian_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "harga_harian_detail_pedagang_id_pedagang_id_fk": {
+          "name": "harga_harian_detail_pedagang_id_pedagang_id_fk",
+          "tableFrom": "harga_harian_detail",
+          "tableTo": "pedagang",
+          "columnsFrom": ["pedagang_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.ingestion_log": {
+      "name": "ingestion_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tanggal_fetch": {
+          "name": "tanggal_fetch",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pasar_id": {
+          "name": "pasar_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipe_komoditas_id": {
+          "name": "tipe_komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "records_fetched": {
+          "name": "records_fetched",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration_ms": {
+          "name": "duration_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ingestion_log_run_id_idx": {
+          "name": "ingestion_log_run_id_idx",
+          "columns": ["run_id"],
+          "isUnique": false
+        },
+        "ingestion_log_tanggal_status_idx": {
+          "name": "ingestion_log_tanggal_status_idx",
+          "columns": ["tanggal_fetch", "status"],
+          "isUnique": false
+        },
+        "ingestion_log_dedup_idx": {
+          "name": "ingestion_log_dedup_idx",
+          "columns": ["tanggal_fetch", "pasar_id", "tipe_komoditas_id", "created_at"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "ingestion_log_pasar_id_pasar_id_fk": {
+          "name": "ingestion_log_pasar_id_pasar_id_fk",
+          "tableFrom": "ingestion_log",
+          "tableTo": "pasar",
+          "columnsFrom": ["pasar_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.komoditas": {
+      "name": "komoditas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode": {
+          "name": "kode",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipe_komoditas_id": {
+          "name": "tipe_komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.kota": {
+      "name": "kota",
+      "schema": "",
+      "columns": {
+        "kode": {
+          "name": "kode",
+          "type": "varchar(10)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kota_kode_provinsi_provinsi_kode_fk": {
+          "name": "kota_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "kota",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.neraca_pangan_provinsi": {
+      "name": "neraca_pangan_provinsi",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_neraca": {
+          "name": "status_neraca",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'seimbang'"
+        },
+        "implikasi_intervensi": {
+          "name": "implikasi_intervensi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tahun_data": {
+          "name": "tahun_data",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "neraca_pangan_prov_kom_idx": {
+          "name": "neraca_pangan_prov_kom_idx",
+          "columns": ["kode_provinsi", "komoditas_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "neraca_pangan_provinsi_kode_provinsi_provinsi_kode_fk": {
+          "name": "neraca_pangan_provinsi_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "neraca_pangan_provinsi",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "neraca_pangan_provinsi_komoditas_id_komoditas_id_fk": {
+          "name": "neraca_pangan_provinsi_komoditas_id_komoditas_id_fk",
+          "tableFrom": "neraca_pangan_provinsi",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pasar": {
+      "name": "pasar",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode": {
+          "name": "kode",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kode_kab_kota": {
+          "name": "kode_kab_kota",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lat": {
+          "name": "lat",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lon": {
+          "name": "lon",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipe_pasar_id": {
+          "name": "tipe_pasar_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kelompok": {
+          "name": "kelompok",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "is_nasional": {
+          "name": "is_nasional",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pasar_kode_provinsi_provinsi_kode_fk": {
+          "name": "pasar_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "pasar",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pasar_kode_kab_kota_kota_kode_fk": {
+          "name": "pasar_kode_kab_kota_kota_kode_fk",
+          "tableFrom": "pasar",
+          "tableTo": "kota",
+          "columnsFrom": ["kode_kab_kota"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pedagang": {
+      "name": "pedagang",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "telepon": {
+          "name": "telepon",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pasar_id": {
+          "name": "pasar_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lantai": {
+          "name": "lantai",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nomor_los": {
+          "name": "nomor_los",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pedagang_pasar_id_pasar_id_fk": {
+          "name": "pedagang_pasar_id_pasar_id_fk",
+          "tableFrom": "pedagang",
+          "tableTo": "pasar",
+          "columnsFrom": ["pasar_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pihps_harga_harian": {
+      "name": "pihps_harga_harian",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tanggal": {
+          "name": "tanggal",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga": {
+          "name": "harga",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pihps_prov_kom_tgl_idx": {
+          "name": "pihps_prov_kom_tgl_idx",
+          "columns": ["kode_provinsi", "komoditas_id", "tanggal"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pihps_harga_harian_kode_provinsi_provinsi_kode_fk": {
+          "name": "pihps_harga_harian_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "pihps_harga_harian",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pihps_harga_harian_komoditas_id_komoditas_id_fk": {
+          "name": "pihps_harga_harian_komoditas_id_komoditas_id_fk",
+          "tableFrom": "pihps_harga_harian",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.produk": {
+      "name": "produk",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode": {
+          "name": "kode",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "satuan_id": {
+          "name": "satuan_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "produk_variant_id_variant_id_fk": {
+          "name": "produk_variant_id_variant_id_fk",
+          "tableFrom": "produk",
+          "tableTo": "variant",
+          "columnsFrom": ["variant_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "produk_satuan_id_satuan_id_fk": {
+          "name": "produk_satuan_id_satuan_id_fk",
+          "tableFrom": "produk",
+          "tableTo": "satuan",
+          "columnsFrom": ["satuan_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.provinsi": {
+      "name": "provinsi",
+      "schema": "",
+      "columns": {
+        "kode": {
+          "name": "kode",
+          "type": "varchar(10)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.satuan": {
+      "name": "satuan",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "display": {
+          "name": "display",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deskripsi": {
+          "name": "deskripsi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.sentra_produksi": {
+      "name": "sentra_produksi",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kode_kab_kota": {
+          "name": "kode_kab_kota",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surplus_tep": {
+          "name": "surplus_tep",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lat": {
+          "name": "lat",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lon": {
+          "name": "lon",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sentra_produksi_kode_provinsi_provinsi_kode_fk": {
+          "name": "sentra_produksi_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "sentra_produksi",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sentra_produksi_kode_kab_kota_kota_kode_fk": {
+          "name": "sentra_produksi_kode_kab_kota_kota_kode_fk",
+          "tableFrom": "sentra_produksi",
+          "tableTo": "kota",
+          "columnsFrom": ["kode_kab_kota"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sentra_produksi_komoditas_id_komoditas_id_fk": {
+          "name": "sentra_produksi_komoditas_id_komoditas_id_fk",
+          "tableFrom": "sentra_produksi",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.tpid_action_log": {
+      "name": "tpid_action_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "alert_id": {
+          "name": "alert_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "catatan": {
+          "name": "catatan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rekomendasi_aksi": {
+          "name": "rekomendasi_aksi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "digital_signature": {
+          "name": "digital_signature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_record": {
+          "name": "hash_record",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "tpid_action_log_alert_idx": {
+          "name": "tpid_action_log_alert_idx",
+          "columns": ["alert_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tpid_action_log_alert_id_tpid_alert_id_fk": {
+          "name": "tpid_action_log_alert_id_tpid_alert_id_fk",
+          "tableFrom": "tpid_action_log",
+          "tableTo": "tpid_alert",
+          "columnsFrom": ["alert_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tpid_action_log_user_id_tpid_user_id_fk": {
+          "name": "tpid_action_log_user_id_tpid_user_id_fk",
+          "tableFrom": "tpid_action_log",
+          "tableTo": "tpid_user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.tpid_alert": {
+      "name": "tpid_alert",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tanggal": {
+          "name": "tanggal",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kode_provinsi": {
+          "name": "kode_provinsi",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kode_kab_kota": {
+          "name": "kode_kab_kota",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga_rata_rata": {
+          "name": "harga_rata_rata",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "threshold_hap": {
+          "name": "threshold_hap",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "z_score": {
+          "name": "z_score",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "jumlah_pedagang": {
+          "name": "jumlah_pedagang",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cooldown_end_tanggal": {
+          "name": "cooldown_end_tanggal",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "tpid_alert_status_idx": {
+          "name": "tpid_alert_status_idx",
+          "columns": ["status"],
+          "isUnique": false
+        },
+        "tpid_alert_tanggal_idx": {
+          "name": "tpid_alert_tanggal_idx",
+          "columns": ["tanggal"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tpid_alert_kode_provinsi_provinsi_kode_fk": {
+          "name": "tpid_alert_kode_provinsi_provinsi_kode_fk",
+          "tableFrom": "tpid_alert",
+          "tableTo": "provinsi",
+          "columnsFrom": ["kode_provinsi"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tpid_alert_kode_kab_kota_kota_kode_fk": {
+          "name": "tpid_alert_kode_kab_kota_kota_kode_fk",
+          "tableFrom": "tpid_alert",
+          "tableTo": "kota",
+          "columnsFrom": ["kode_kab_kota"],
+          "columnsTo": ["kode"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tpid_alert_komoditas_id_komoditas_id_fk": {
+          "name": "tpid_alert_komoditas_id_komoditas_id_fk",
+          "tableFrom": "tpid_alert",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tpid_alert_variant_id_variant_id_fk": {
+          "name": "tpid_alert_variant_id_variant_id_fk",
+          "tableFrom": "tpid_alert",
+          "tableTo": "variant",
+          "columnsFrom": ["variant_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.tpid_user": {
+      "name": "tpid_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.variant": {
+      "name": "variant",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode": {
+          "name": "kode",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "komoditas_id": {
+          "name": "komoditas_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "satuan_id": {
+          "name": "satuan_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "harga_min": {
+          "name": "harga_min",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "harga_max": {
+          "name": "harga_max",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kenaikan_max": {
+          "name": "kenaikan_max",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "penurunan_max": {
+          "name": "penurunan_max",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "coicop_7": {
+          "name": "coicop_7",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "coicop_10": {
+          "name": "coicop_10",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jenis_threshold": {
+          "name": "jenis_threshold",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'tidak_diatur'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "variant_komoditas_id_komoditas_id_fk": {
+          "name": "variant_komoditas_id_komoditas_id_fk",
+          "tableFrom": "variant",
+          "tableTo": "komoditas",
+          "columnsFrom": ["komoditas_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "variant_satuan_id_satuan_id_fk": {
+          "name": "variant_satuan_id_satuan_id_fk",
+          "tableFrom": "variant",
+          "tableTo": "satuan",
+          "columnsFrom": ["satuan_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -10,6 +10,13 @@ export interface AIContextDinamis {
   panenCabai: boolean;
   kursUsdIdr: number;
   levelKurs: 'stabil' | 'melemah' | 'menguat';
+  sumberKurs?: string; // transparansi sumber data kurs
+  // Neraca pangan provinsi yang sedang dianalisis (surplus/defisit/seimbang)
+  // Sumber: Bapanas (Keppres 66/2021), update tahunan
+  neracaProvinsi?: {
+    statusNeraca: 'surplus' | 'defisit' | 'seimbang';
+    implikasiIntervensi: string;
+  } | null;
 }
 
 export interface AnomalyResult {
@@ -213,6 +220,10 @@ Transaksi: ${JSON.stringify(harga)}`;
         jarakKm?: number;
         estimasiOngkosKirimPerTon?: number;
       } | null;
+      neracaInfo?: {
+        statusNeraca: 'surplus' | 'defisit' | 'seimbang';
+        implikasiIntervensi: string;
+      } | null;
     }[],
     dynamicContext?: AIContextDinamis,
   ): Promise<AnomalyResult[]> {
@@ -232,6 +243,10 @@ Transaksi: ${JSON.stringify(harga)}`;
         kapasitasSurplusTon: number;
         jarakKm?: number;
         estimasiOngkosKirimPerTon?: number;
+      } | null;
+      neracaInfo?: {
+        statusNeraca: 'surplus' | 'defisit' | 'seimbang';
+        implikasiIntervensi: string;
       } | null;
     }[] = [];
 
@@ -290,7 +305,23 @@ GUNAKAN konteks ini untuk membedakan:
 1. "Holiday spike" (demand-driven, sementara) → intervensi lunak (GPM, koordinasi distributor)
 2. "Supply shock" (structural, menetap) → intervensi keras (impor darurat, KAD lintas provinsi)
 3. "Spekulasi/hoarding" → intervensi Satgas Pangan (sidak gudang, pengawasan distributor)
-4. "Kurs shock" untuk komoditas impor (kedelai/gula) → koordinasi Kemendag pusat, bukan Pemda
+4. "Kurs shock" untuk komoditas impor (kedelai/gula/daging) → koordinasi Kemendag pusat, bukan Pemda
+
+## STATUS NERACA PANGAN PROVINSI INI
+${
+  dynamicContext.neracaProvinsi
+    ? `Status: ${dynamicContext.neracaProvinsi.statusNeraca.toUpperCase()} — ${dynamicContext.neracaProvinsi.implikasiIntervensi}
+CARAT KRITIS: Ini menentukan ARAH intervensi yang tepat. Lihat di bawah.`
+    : 'Status neraca pangan provinsi ini belum tersedia dalam database. Asumsi: intervensi lokal standar.'
+}
+
+## PANDUAN INTERVENSI BERDASARKAN NERACA + JENIS THRESHOLD
+- Jika threshold = HET: Pelanggaran HET bersifat MENGIKAT secara hukum → sanksi Kemendag/Bapanas
+- Jika threshold = HAP: HAP tidak mengikat → intervensi koordinatif (GPM, subsidi, KAD), BUKAN sanksi
+- Jika threshold = tidak_diatur: Intervensi murni melalui koordinasi pasokan
+- Jika neraca = surplus + harga naik: Cek hambatan DISTRIBUSI KELUAR (hoarding, kartel ekspor dari provinsi ini)
+- Jika neraca = defisit + harga naik: Cek hambatan PASOKAN MASUK (logistik, biaya angkut dari luar)
+- Jika neraca = seimbang + harga naik: Kemungkinan masalah lokal (spekulasi, distribusi dalam provinsi)
 `
         : '';
 
@@ -337,15 +368,34 @@ Kembalikan hasil dalam bentuk JSON array yang urutan elemennya sesuai dengan uru
             c.historisPihpsRataRata && c.harga.harga
               ? Math.round(c.harga.harga - c.historisPihpsRataRata)
               : null,
-          parameterNasional: {
-            hargaMaxHET: c.v?.hargaMax,
+          parameterRegulasi: {
+            // PENTING: Jenis threshold menentukan mekanisme intervensi yang legally correct.
+            // HET (beras: Kepbadan 299/2025, Minyakita: Permendag 43/2025): MENGIKAT, pelanggaran = sanksi
+            // HAP (cabai, bawang, kedelai, daging: Perbadan 12/2024): TIDAK MENGIKAT, acuan intervensi
+            // tidak_diatur: Tidak ada regulasi harga nasional — intervensi hanya via koordinasi pasokan
+            jenisThreshold: (c.v as any)?.jenisThreshold ?? 'tidak_diatur',
+            thresholdHarga: c.v?.hargaMax,
+            labelThreshold:
+              (c.v as any)?.jenisThreshold === 'HET'
+                ? `HET Rp${c.v?.hargaMax?.toLocaleString('id-ID')} (MENGIKAT — Kepbadan/Permendag)`
+                : (c.v as any)?.jenisThreshold === 'HAP'
+                  ? `HAP Rp${c.v?.hargaMax?.toLocaleString('id-ID')} (TIDAK MENGIKAT — Perbadan 12/2024)`
+                  : (c.v as any)?.jenisThreshold === 'HA'
+                    ? `HA Rp${c.v?.hargaMax?.toLocaleString('id-ID')} (Harga Acuan Produsen — Perbadan 12/2024)`
+                    : 'Tidak ada regulasi harga nasional',
             kenaikanMaxToleransi: c.v?.kenaikanMax,
-            // Berapa persen di atas HET? Lebih mudah di-reason AI daripada angka absolut
-            persenDiAtasHET:
+            // Berapa persen di atas threshold? Lebih mudah di-reason AI daripada angka absolut
+            persenDiAtasThreshold:
               c.v?.hargaMax && c.harga.harga
                 ? +(((c.harga.harga - c.v.hargaMax) / c.v.hargaMax) * 100).toFixed(1)
                 : null,
           },
+          neracaPanganProvinsi: c.neracaInfo
+            ? {
+                statusNeraca: c.neracaInfo.statusNeraca,
+                implikasiIntervensi: c.neracaInfo.implikasiIntervensi,
+              }
+            : null,
           analisisStatistik: {
             zScoreRelativePihps: c.zScore,
             interpretasiZScore:
@@ -430,6 +480,7 @@ Kembalikan hasil dalam bentuk JSON array yang urutan elemennya sesuai dengan uru
   async generateTrendNarrative(
     provinsi: string,
     history: { tanggal: string; harga: number; namaKomoditas: string }[],
+    dynamicContext?: AIContextDinamis,
   ): Promise<TrendResult> {
     // 1. Establish fallback baseline
     const prices = history.map((h) => h.harga);
@@ -453,12 +504,17 @@ Kembalikan hasil dalam bentuk JSON array yang urutan elemennya sesuai dengan uru
 
     const fallback: TrendResult = { trend, narrative, projection };
 
+    // Bangun konteks situasional untuk tren
+    const blokKonteksTren = dynamicContext
+      ? `\nKonteks situasional: ${dynamicContext.ringkasan}\nNeraca pangan: ${dynamicContext.neracaProvinsi?.statusNeraca ?? 'belum diketahui'} — ${dynamicContext.neracaProvinsi?.implikasiIntervensi ?? ''}`
+      : '';
+
     const systemPrompt = `Kamu adalah analis pangan nasional yang menganalisis tren harga komoditas di wilayah Indonesia.
-Analisis data deret waktu harga historis dan tentukan tren harga serta proyeksi 3 hari ke depan.
+Analisis data deret waktu harga historis dan tentukan tren harga serta proyeksi 3 hari ke depan.${blokKonteksTren}
 Kembalikan respon dalam format JSON saja, tanpa markdown atau teks penjelasan tambahan:
 {
   "trend": "rising" | "stable" | "falling",
-  "narrative": "Penjelasan singkat dalam bahasa Indonesia mengenai pergerakan harga saat ini",
+  "narrative": "Penjelasan singkat dalam bahasa Indonesia mengenai pergerakan harga saat ini, sertakan faktor kontekstual jika relevan (hari raya, musim, neraca pangan)",
   "projection": "Penjelasan singkat mengenai proyeksi harga 3 hari ke depan"
 }`;
 

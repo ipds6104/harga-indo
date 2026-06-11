@@ -74,6 +74,12 @@ export const variant = pgTable('variant', {
   penurunanMax: doublePrecision('penurunan_max'),
   coicop7: varchar('coicop_7', { length: 50 }),
   coicop10: varchar('coicop_10', { length: 50 }),
+  // Jenis instrumen regulasi harga — PENTING untuk menentukan mekanisme intervensi yang legally correct:
+  // 'HET'          : Harga Eceran Tertinggi — mengikat, pelanggaran = sanksi (beras: Kepbadan 299/2025, Minyakita: Permendag 43/2025)
+  // 'HAP'          : Harga Acuan Penjualan — tidak mengikat, acuan intervensi (cabai, bawang: Perbadan 12/2024)
+  // 'HA'           : Harga Acuan di tingkat produsen — untuk daging sapi/kerbau (Perbadan 12/2024)
+  // 'tidak_diatur' : Tidak ada regulasi harga nasional, intervensi melalui koordinasi pasokan saja
+  jenisThreshold: varchar('jenis_threshold', { length: 20 }).default('tidak_diatur'),
 });
 
 // Master Produk (Turunan Variant)
@@ -322,6 +328,37 @@ export const sentraProduksi = pgTable('sentra_produksi', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Neraca Pangan Provinsi
+// Sumber data: Peta Neraca Pangan Daerah (Bapanas, publikasi tahunan)
+// Kewenangan: Keputusan Presiden No. 66/2021 tentang Badan Pangan Nasional, pasal neraca pangan
+// Update: Manual, 1x/tahun saat Bapanas menerbitkan neraca pangan terbaru
+export const neracaPanganProvinsi = pgTable(
+  'neraca_pangan_provinsi',
+  {
+    id: integer('id').primaryKey(),
+    kodeProvinsi: varchar('kode_provinsi', { length: 10 })
+      .notNull()
+      .references(() => provinsi.kode),
+    komoditasId: integer('komoditas_id')
+      .notNull()
+      .references(() => komoditas.id),
+    // 'surplus': provinsi ini produksi > konsumsi (net exporter)
+    // 'defisit': provinsi ini konsumsi > produksi (net importer, bergantung pasokan luar)
+    // 'seimbang': produksi ≈ konsumsi, tidak bergantung impor antar-provinsi
+    statusNeraca: varchar('status_neraca', { length: 20 }).notNull().default('seimbang'),
+    // Implikasi intervensi:
+    // surplus + harga naik  → cek hambatan distribusi keluar (hoarding/kartel ekspor)
+    // defisit + harga naik  → subsidi logistik impor antar-provinsi (KAD / subsidi angkut)
+    // seimbang + harga naik → intervensi lokal (GPM, audit distributor lokal)
+    implikasiIntervensi: text('implikasi_intervensi'),
+    tahunData: integer('tahun_data').notNull(), // Tahun publikasi neraca Bapanas
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    neracaProvKomIdx: index('neraca_pangan_prov_kom_idx').on(table.kodeProvinsi, table.komoditasId),
+  }),
+);
+
 // PIHPS BI Historical average caching
 export const pihpsHargaHarian = pgTable(
   'pihps_harga_harian',
@@ -431,4 +468,15 @@ export const tpidAlertRelations = relations(tpidAlert, ({ one, many }) => ({
 export const tpidActionLogRelations = relations(tpidActionLog, ({ one }) => ({
   alert: one(tpidAlert, { fields: [tpidActionLog.alertId], references: [tpidAlert.id] }),
   user: one(tpidUser, { fields: [tpidActionLog.userId], references: [tpidUser.id] }),
+}));
+
+export const neracaPanganProvinsiRelations = relations(neracaPanganProvinsi, ({ one }) => ({
+  provinsi: one(provinsi, {
+    fields: [neracaPanganProvinsi.kodeProvinsi],
+    references: [provinsi.kode],
+  }),
+  komoditas: one(komoditas, {
+    fields: [neracaPanganProvinsi.komoditasId],
+    references: [komoditas.id],
+  }),
 }));

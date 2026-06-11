@@ -36,6 +36,13 @@
       "when": 1781077089287,
       "tag": "0004_secret_molten_man",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1781147016555,
+      "tag": "0005_striped_micromacro",
+      "breakpoints": true
     }
   ]
 }
