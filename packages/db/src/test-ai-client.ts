@@ -4,7 +4,7 @@ async function test() {
   console.log('Testing direct AI Proxy connection...');
   const client = new AIClient();
 
-  const hargaMock = {
+  const hargaMockAnomaly = {
     id: 1,
     pasarId: 1,
     komoditasId: 1,
@@ -31,6 +31,13 @@ async function test() {
     updatedAt: new Date(),
   };
 
+  const hargaMockNormal = {
+    ...hargaMockAnomaly,
+    harga: 11000,
+    hargaSebelumnya: 11000,
+    prosentasePerubahan: 0,
+  };
+
   const variantMock = {
     id: 1,
     kode: 'BERAS',
@@ -45,9 +52,22 @@ async function test() {
     coicop10: '0101',
   };
 
-  console.log('Sending anomaly detection request to proxy...');
-  const result = await client.detectAnomalies(hargaMock, variantMock);
-  console.log('Parsed result from Gemini Proxy:', result);
+  console.log('\n--- 1. Testing Rules-First Pre-filtering (Normal Price, should NOT query AI) ---');
+  console.log('Sending normal price anomaly detection request...');
+  const normalResult = await client.detectAnomalies(hargaMockNormal, variantMock);
+  console.log('Result for Normal Price (expected immediately, no API logs):', normalResult);
+
+  console.log(
+    '\n--- 2. Testing Circuit Breaker (Consecutive Anomaly Queries with invalid key) ---',
+  );
+  for (let i = 1; i <= 5; i++) {
+    console.log(`\n--- Loop #${i} ---`);
+    const start = Date.now();
+    const result = await client.detectAnomalies(hargaMockAnomaly, variantMock);
+    const duration = Date.now() - start;
+    console.log(`Loop #${i} Result (took ${duration}ms):`, JSON.stringify(result));
+  }
+
   process.exit(0);
 }
 

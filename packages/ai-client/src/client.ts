@@ -30,6 +30,13 @@ export class AIClient {
   private key: string;
   private model: string;
 
+  // Circuit Breaker State (shared across all instances)
+  private static failureCount = 0;
+  private static lastFailureTime = 0;
+  private static isBypassed = false;
+  private static readonly FAILURE_THRESHOLD = 3;
+  private static readonly BYPASS_DURATION_MS = 5 * 60 * 1000; // 5 minutes bypass cooldown
+
   constructor() {
     // Standard AI credentials matching fintr configurations
     this.url = process.env.AI_BASE_URL || 'https://ai.dvlpid.my.id/v1';
@@ -44,6 +51,26 @@ export class AIClient {
   ): Promise<T> {
     if (!this.url || !this.key) {
       return fallbackData;
+    }
+
+    // Check Circuit Breaker status
+    if (AIClient.isBypassed) {
+      const timeSinceLastFailure = Date.now() - AIClient.lastFailureTime;
+      if (timeSinceLastFailure > AIClient.BYPASS_DURATION_MS) {
+        // Cooldown period expired, reset and try again
+        AIClient.isBypassed = false;
+        AIClient.failureCount = 0;
+        console.log('[AIClient] Circuit breaker cooldown expired. Retrying proxy connection...');
+      } else {
+        // Still in bypassed state
+        const remainingTimeSec = Math.ceil(
+          (AIClient.BYPASS_DURATION_MS - timeSinceLastFailure) / 1000,
+        );
+        console.warn(
+          `[AIClient] Circuit breaker is ACTIVE. Bypassing AI proxy call. Cooldown remaining: ${remainingTimeSec}s`,
+        );
+        return fallbackData;
+      }
     }
 
     try {
@@ -74,11 +101,29 @@ export class AIClient {
 
       const content = data.choices[0]?.message?.content || '';
 
+      // Reset failure counter on successful request
+      AIClient.failureCount = 0;
+      AIClient.isBypassed = false;
+
       // Clean JSON markdown wrapper blocks if present
       const jsonStr = content.replace(/```json\n?|\n?```/g, '').trim();
       return JSON.parse(jsonStr) as T;
-    } catch (error) {
-      console.error('AI Proxy error on completions API:', error);
+    } catch (error: any) {
+      AIClient.failureCount++;
+      AIClient.lastFailureTime = Date.now();
+
+      console.error(
+        `[AIClient] AI Proxy error on completions API (${AIClient.failureCount}/${AIClient.FAILURE_THRESHOLD}):`,
+        error.message || error,
+      );
+
+      if (AIClient.failureCount >= AIClient.FAILURE_THRESHOLD) {
+        AIClient.isBypassed = true;
+        console.error(
+          `[AIClient] Circuit breaker TRIPPED. Bypassing AI proxy calls for ${AIClient.BYPASS_DURATION_MS / 60000} minutes.`,
+        );
+      }
+
       return fallbackData;
     }
   }
@@ -102,6 +147,12 @@ export class AIClient {
     }
 
     const fallback: AnomalyResult = { isAnomaly, reason, severity };
+
+    // Rules-First Pre-filtering: If mathematically determined to be normal,
+    // bypass the AI API call entirely to conserve rate limits and prevent slowdowns.
+    if (!isAnomaly) {
+      return fallback;
+    }
 
     const systemPrompt = `Kamu adalah asisten AI TPID Indonesia yang bertugas menganalisis harga komoditas pangan untuk mendeteksi anomali.
 Analisis data harga harian saat ini terhadap batas Harga Eceran Tertinggi (HET) / Harga Acuan Penjualan (HAP).
